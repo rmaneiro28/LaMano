@@ -1,0 +1,225 @@
+---
+// VictoryModal.astro - Modal de fin de partida, celebración con confetti y estadísticas completas
+---
+
+<div class="modal-overlay" id="victory-modal" role="dialog" aria-modal="true" aria-labelledby="modal-title-victory">
+  <div class="modal-sheet victory-sheet">
+    <canvas id="confetti-canvas" class="confetti-canvas"></canvas>
+
+    <div class="victory-header">
+      <div class="trophy-badge float-mano">🏆</div>
+      <h2 id="modal-title-victory" class="victory-title">¡Partida Finalizada!</h2>
+      <p class="victory-winner-team" id="victory-winner-name">Equipo Campeón</p>
+    </div>
+
+    <!-- Marcador Final -->
+    <div class="final-score-banner">
+      <div class="final-team">
+        <span class="final-team-label" id="final-team-a-name">Nosotros</span>
+        <strong class="final-score-val tabular-nums" id="final-score-a">100</strong>
+      </div>
+      <span class="score-vs-divider">VS</span>
+      <div class="final-team">
+        <span class="final-team-label" id="final-team-b-name">Ellos</span>
+        <strong class="final-score-val tabular-nums" id="final-score-b">78</strong>
+      </div>
+    </div>
+
+    <!-- Resumen Estadístico -->
+    <div class="stats-card">
+      <h3 class="stats-title">Estadísticas de la Partida</h3>
+
+      <div class="stats-grid">
+        <div class="stat-item">
+          <span class="stat-label">Total de Manos</span>
+          <strong class="stat-value tabular-nums" id="stat-total-hands">0</strong>
+        </div>
+        <div class="stat-item">
+          <span class="stat-label">Diferencia Final</span>
+          <strong class="stat-value tabular-nums" id="stat-diff-points">0 pts</strong>
+        </div>
+        <div class="stat-item">
+          <span class="stat-label">Manos Ganadas Eq. A</span>
+          <strong class="stat-value tabular-nums" id="stat-hands-team-a">0</strong>
+        </div>
+        <div class="stat-item">
+          <span class="stat-label">Manos Ganadas Eq. B</span>
+          <strong class="stat-value tabular-nums" id="stat-hands-team-b">0</strong>
+        </div>
+        <div class="stat-item">
+          <span class="stat-label">Mano con Más Puntos</span>
+          <strong class="stat-value tabular-nums" id="stat-max-points">0 pts</strong>
+        </div>
+        <div class="stat-item">
+          <span class="stat-label">Promedio Pts / Mano</span>
+          <strong class="stat-value tabular-nums" id="stat-avg-points">0</strong>
+        </div>
+      </div>
+    </div>
+
+    <!-- Acciones Finales -->
+    <div class="victory-actions">
+      <button type="button" class="btn btn-gold btn-rematch" id="btn-rematch">
+        <span class="btn-icon-symbol">🔄</span>
+        <span>Revancha (Mismos Jugadores)</span>
+      </button>
+
+      <button type="button" class="btn btn-secondary btn-new-game" id="btn-new-game-from-victory">
+        <span class="btn-icon-symbol">⚙️</span>
+        <span>Configurar Nueva Partida</span>
+      </button>
+    </div>
+  </div>
+</div>
+
+<style>
+  .victory-sheet {
+    position: relative;
+    overflow: hidden;
+    text-align: center;
+    max-height: 92vh;
+    padding-top: 2rem;
+  }
+
+  .confetti-canvas {
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    pointer-events: none;
+    z-index: 10;
+  }
+
+  .victory-header {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 0.35rem;
+    z-index: 2;
+  }
+
+  .trophy-badge {
+    font-size: 3.2rem;
+    line-height: 1;
+    filter: drop-shadow(0 0 15px var(--mano-glow));
+    margin-bottom: 0.25rem;
+  }
+
+  .victory-title {
+    font-size: 1.5rem;
+    color: var(--text-main);
+  }
+
+  .victory-winner-team {
+    font-size: 1.25rem;
+    font-weight: 800;
+    color: var(--mano-gold);
+    text-shadow: 0 0 12px var(--mano-glow);
+  }
+
+  /* Marcador Final */
+  .final-score-banner {
+    display: flex;
+    align-items: center;
+    justify-content: space-around;
+    background: rgba(0, 0, 0, 0.35);
+    border: 1.5px solid var(--border-strong);
+    border-radius: var(--radius-lg);
+    padding: 0.85rem 1rem;
+    margin: 0.35rem 0;
+    z-index: 2;
+  }
+
+  .final-team {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 0.15rem;
+  }
+
+  .final-team-label {
+    font-size: 0.85rem;
+    font-weight: 700;
+    color: var(--text-muted);
+    text-transform: uppercase;
+  }
+
+  .final-score-val {
+    font-family: var(--font-display);
+    font-size: 2.2rem;
+    font-weight: 800;
+    color: var(--text-main);
+    line-height: 1;
+  }
+
+  .score-vs-divider {
+    font-size: 0.9rem;
+    font-weight: 800;
+    color: var(--text-subtle);
+  }
+
+  /* Estadísticas */
+  .stats-card {
+    background: var(--bg-surface-elevated);
+    border: 1px solid var(--border-subtle);
+    border-radius: var(--radius-md);
+    padding: 0.85rem;
+    text-align: left;
+    display: flex;
+    flex-direction: column;
+    gap: 0.65rem;
+    z-index: 2;
+  }
+
+  .stats-title {
+    font-size: 0.82rem;
+    color: var(--mano-gold);
+    text-transform: uppercase;
+    letter-spacing: 0.04em;
+  }
+
+  .stats-grid {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 0.65rem 0.85rem;
+  }
+
+  .stat-item {
+    display: flex;
+    flex-direction: column;
+    gap: 0.1rem;
+  }
+
+  .stat-label {
+    font-size: 0.72rem;
+    color: var(--text-muted);
+  }
+
+  .stat-value {
+    font-size: 1.1rem;
+    font-weight: 800;
+    color: var(--text-main);
+    font-family: var(--font-display);
+  }
+
+  /* Acciones */
+  .victory-actions {
+    display: flex;
+    flex-direction: column;
+    gap: 0.65rem;
+    margin-top: 0.25rem;
+    z-index: 2;
+  }
+
+  .btn-rematch {
+    height: 54px;
+    font-size: 1.1rem;
+    font-weight: 800;
+    border-radius: var(--radius-md);
+  }
+
+  .btn-new-game {
+    height: 46px;
+  }
+</style>

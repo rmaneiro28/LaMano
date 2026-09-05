@@ -1,0 +1,45 @@
+---
+// index.astro - Página Principal de LaMano
+import Layout from '../layouts/Layout.astro';
+import Header from '../components/Header.astro';
+import ScoreBoard from '../components/ScoreBoard.astro';
+import DominoTable from '../components/DominoTable.astro';
+import RoundControls from '../components/RoundControls.astro';
+import CloseHandModal from '../components/CloseHandModal.astro';
+import HistoryDrawer from '../components/HistoryDrawer.astro';
+import SetupModal from '../components/SetupModal.astro';
+import VictoryModal from '../components/VictoryModal.astro';
+---
+
+<Layout>
+  <main class="app-container">
+    <!-- Barra Superior -->
+    <Header />
+
+    <!-- Marcador Global Grande -->
+    <ScoreBoard />
+
+    <!-- Mesa de Dominó con Representación Gráfica e Indicador de "La Mano" -->
+    <DominoTable />
+
+    <!-- Controles Rápidos de Mesa -->
+    <RoundControls />
+
+    <!-- Modales y Drawers -->
+    <CloseHandModal />
+    <HistoryDrawer />
+    <SetupModal />
+    <VictoryModal />
+  </main>
+
+  <script>
+    import { initApp } from '../scripts/app';
+
+    // Inicializar la aplicación una vez que el DOM esté listo
+    if (document.readyState === 'loading') {
+      document.addEventListener('DOMContentLoaded', () => initApp());
+    } else {
+      initApp();
+    }
+  </script>
+</Layout>

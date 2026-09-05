@@ -1,0 +1,316 @@
+---
+// CloseHandModal.astro - Formulario modal táctil de registro de mano
+---
+
+<div class="modal-overlay" id="close-hand-modal" role="dialog" aria-modal="true" aria-labelledby="modal-title-close">
+  <div class="modal-sheet">
+    <div class="sheet-handle"></div>
+
+    <div class="modal-header">
+      <div>
+        <h2 id="modal-title-close">Cerrar Mano Actual</h2>
+        <p class="modal-subtitle" id="modal-subtitle-round">Ronda 1</p>
+      </div>
+      <button class="btn-icon close-modal-btn" id="btn-cancel-close-hand" aria-label="Cancelar">✕</button>
+    </div>
+
+    <!-- 1. Selector de Tipo de Victoria -->
+    <div class="form-section">
+      <label class="section-label">Tipo de Victoria</label>
+      <div class="segment-control">
+        <button type="button" class="segment-btn active" id="btn-win-normal" data-type="normal">
+          <span class="segment-icon">🀰</span>
+          <span>Dominada Normal</span>
+        </button>
+        <button type="button" class="segment-btn" id="btn-win-tranca" data-type="tranca">
+          <span class="segment-icon">🔒</span>
+          <span>Tranca / Cierre</span>
+        </button>
+      </div>
+    </div>
+
+    <!-- 2. Selector de Ganador -->
+    <!-- Vista A: Si es Dominada Normal -> Selección de Jugador Individual -->
+    <div class="form-section" id="section-winner-player">
+      <label class="section-label">¿Quién dominó la mano?</label>
+      <div class="player-selection-grid">
+        <button type="button" class="player-select-btn" data-seat="0" id="btn-select-seat-0">
+          <span class="seat-team-dot dot-a"></span>
+          <span class="select-player-name" id="select-name-0">Jugador 1</span>
+          <span class="select-team-tag">Nosotros</span>
+        </button>
+        <button type="button" class="player-select-btn" data-seat="1" id="btn-select-seat-1">
+          <span class="seat-team-dot dot-b"></span>
+          <span class="select-player-name" id="select-name-1">Jugador 2</span>
+          <span class="select-team-tag">Ellos</span>
+        </button>
+        <button type="button" class="player-select-btn" data-seat="2" id="btn-select-seat-2">
+          <span class="seat-team-dot dot-a"></span>
+          <span class="select-player-name" id="select-name-2">Jugador 3</span>
+          <span class="select-team-tag">Nosotros</span>
+        </button>
+        <button type="button" class="player-select-btn" data-seat="3" id="btn-select-seat-3">
+          <span class="seat-team-dot dot-b"></span>
+          <span class="select-player-name" id="select-name-3">Jugador 4</span>
+          <span class="select-team-tag">Ellos</span>
+        </button>
+      </div>
+    </div>
+
+    <!-- Vista B: Si es Tranca -> Selección de Pareja Ganadora del Conteo -->
+    <div class="form-section hidden" id="section-winner-team">
+      <label class="section-label">Pareja ganadora del conteo de puntos:</label>
+      <div class="team-selection-grid">
+        <button type="button" class="team-select-btn team-a" data-team="teamA" id="btn-select-team-a">
+          <span class="team-select-indicator">🔵</span>
+          <span class="team-select-name" id="select-team-a-name">Nosotros</span>
+        </button>
+        <button type="button" class="team-select-btn team-b" data-team="teamB" id="btn-select-team-b">
+          <span class="team-select-indicator">🟠</span>
+          <span class="team-select-name" id="select-team-b-name">Ellos</span>
+        </button>
+      </div>
+    </div>
+
+    <!-- 3. Entrada de Puntos -->
+    <div class="form-section points-section">
+      <div class="points-header">
+        <label class="section-label">Puntos sumados en la mano</label>
+        <div class="points-display-box">
+          <span class="points-value tabular-nums" id="input-points-display">0</span>
+          <span class="points-unit">pts</span>
+        </div>
+      </div>
+
+      <!-- Chips de suma rápida -->
+      <div class="quick-add-row">
+        <button type="button" class="quick-chip" data-add="5">+5</button>
+        <button type="button" class="quick-chip" data-add="10">+10</button>
+        <button type="button" class="quick-chip" data-add="20">+20</button>
+        <button type="button" class="quick-chip" data-add="30">+30</button>
+        <button type="button" class="quick-chip" data-add="50">+50</button>
+      </div>
+
+      <!-- Keypad táctil numérico -->
+      <div class="keypad-grid">
+        <button type="button" class="keypad-btn" data-num="1">1</button>
+        <button type="button" class="keypad-btn" data-num="2">2</button>
+        <button type="button" class="keypad-btn" data-num="3">3</button>
+        <button type="button" class="keypad-btn" data-num="4">4</button>
+        <button type="button" class="keypad-btn" data-num="5">5</button>
+        <button type="button" class="keypad-btn" data-num="6">6</button>
+        <button type="button" class="keypad-btn" data-num="7">7</button>
+        <button type="button" class="keypad-btn" data-num="8">8</button>
+        <button type="button" class="keypad-btn" data-num="9">9</button>
+        <button type="button" class="keypad-btn action-btn" id="btn-keypad-clear">C</button>
+        <button type="button" class="keypad-btn" data-num="0">0</button>
+        <button type="button" class="keypad-btn action-btn" id="btn-keypad-backspace">⌫</button>
+      </div>
+    </div>
+
+    <!-- Previsualización del Impacto -->
+    <div class="preview-impact-box" id="preview-impact">
+      <span class="preview-icon">ℹ️</span>
+      <span class="preview-text" id="preview-text">Selecciona el ganador y anota los puntos</span>
+    </div>
+
+    <!-- Botón Confirmar -->
+    <button type="button" class="btn btn-primary btn-save-hand" id="btn-submit-hand">
+      <span>Confirmar y Guardar Mano</span>
+    </button>
+  </div>
+</div>
+
+<style>
+  .modal-subtitle {
+    font-size: 0.8rem;
+    color: var(--mano-gold);
+    font-weight: 700;
+  }
+
+  .form-section {
+    display: flex;
+    flex-direction: column;
+    gap: 0.45rem;
+  }
+
+  .section-label {
+    font-size: 0.82rem;
+    font-weight: 700;
+    color: var(--text-muted);
+    text-transform: uppercase;
+    letter-spacing: 0.04em;
+  }
+
+  /* Selector Segmentado */
+  .segment-control {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    background: rgba(0, 0, 0, 0.35);
+    padding: 0.3rem;
+    border-radius: var(--radius-md);
+    border: 1px solid var(--border-subtle);
+    gap: 0.35rem;
+  }
+
+  .segment-btn {
+    padding: 0.6rem 0.5rem;
+    border-radius: var(--radius-sm);
+    font-size: 0.85rem;
+    font-weight: 700;
+    color: var(--text-muted);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 0.4rem;
+    transition: all 0.15s ease;
+  }
+
+  .segment-btn.active {
+    background: var(--bg-surface-elevated);
+    color: var(--text-main);
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.3);
+    border: 1px solid var(--border-strong);
+  }
+
+  /* Grid de selección de jugadores */
+  .player-selection-grid {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 0.5rem;
+  }
+
+  .player-select-btn {
+    background: var(--bg-surface-elevated);
+    border: 1.5px solid var(--border-subtle);
+    border-radius: var(--radius-md);
+    padding: 0.6rem 0.5rem;
+    display: flex;
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 0.15rem;
+    text-align: left;
+    transition: all 0.15s ease;
+  }
+
+  .player-select-btn.selected {
+    border-color: var(--mano-gold);
+    background: rgba(251, 191, 36, 0.12);
+    box-shadow: 0 0 12px var(--mano-glow);
+  }
+
+  .seat-team-dot {
+    width: 8px;
+    height: 8px;
+    border-radius: 50%;
+  }
+
+  .select-player-name {
+    font-size: 0.95rem;
+    font-weight: 700;
+    color: var(--text-main);
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    max-width: 100%;
+  }
+
+  .select-team-tag {
+    font-size: 0.7rem;
+    color: var(--text-muted);
+    font-weight: 600;
+  }
+
+  /* Grid de selección de equipo (tranca) */
+  .team-selection-grid {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 0.6rem;
+  }
+
+  .team-select-btn {
+    background: var(--bg-surface-elevated);
+    border: 2px solid var(--border-subtle);
+    border-radius: var(--radius-md);
+    padding: 0.8rem 0.6rem;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 0.5rem;
+    font-weight: 700;
+    font-size: 1rem;
+    color: var(--text-main);
+  }
+
+  .team-select-btn.team-a.selected {
+    border-color: var(--team-a-base);
+    background: var(--team-a-bg);
+    box-shadow: 0 0 12px var(--team-a-glow);
+  }
+
+  .team-select-btn.team-b.selected {
+    border-color: var(--team-b-base);
+    background: var(--team-b-bg);
+    box-shadow: 0 0 12px var(--team-b-glow);
+  }
+
+  /* Display de puntos */
+  .points-header {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+  }
+
+  .points-display-box {
+    display: flex;
+    align-items: baseline;
+    gap: 0.25rem;
+    background: rgba(0, 0, 0, 0.4);
+    border: 1.5px solid var(--border-strong);
+    border-radius: var(--radius-md);
+    padding: 0.3rem 0.8rem;
+  }
+
+  .points-value {
+    font-family: var(--font-display);
+    font-size: 1.7rem;
+    font-weight: 800;
+    color: var(--mano-gold);
+    line-height: 1;
+  }
+
+  .points-unit {
+    font-size: 0.8rem;
+    color: var(--text-muted);
+    font-weight: 700;
+  }
+
+  /* Preview de Impacto */
+  .preview-impact-box {
+    background: rgba(255, 255, 255, 0.04);
+    border: 1px dashed var(--border-strong);
+    border-radius: var(--radius-md);
+    padding: 0.65rem 0.85rem;
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+    font-size: 0.82rem;
+    color: var(--text-muted);
+  }
+
+  .preview-text strong {
+    color: var(--text-main);
+  }
+
+  .btn-save-hand {
+    height: 52px;
+    font-size: 1.05rem;
+    font-weight: 800;
+    border-radius: var(--radius-md);
+    margin-top: 0.25rem;
+  }
+
+  .hidden {
+    display: none !important;
+  }
+</style>

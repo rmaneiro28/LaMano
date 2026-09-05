@@ -1,0 +1,134 @@
+---
+// Header.astro - Barra superior de estado y controles
+---
+
+<header class="app-header">
+  <div class="header-brand">
+    <span class="domino-logo-icon">🀰</span>
+    <div>
+      <h1 class="header-title">LaMano</h1>
+      <span class="header-subtitle">Dominó por Parejas</span>
+    </div>
+  </div>
+
+  <div class="header-actions">
+    <!-- Botón Pantalla Activa (Wake Lock) -->
+    <button
+      id="btn-wake-lock"
+      class="header-btn"
+      title="Mantener pantalla activa durante la partida"
+      aria-label="Pantalla siempre activa"
+    >
+      <span class="btn-icon-symbol" id="wake-lock-icon">☀️</span>
+      <span class="status-dot" id="wake-lock-dot"></span>
+    </button>
+
+    <!-- Botón Sonido Mute/Unmute -->
+    <button
+      id="btn-audio-toggle"
+      class="header-btn"
+      title="Activar / Desactivar sonido"
+      aria-label="Sonido"
+    >
+      <span class="btn-icon-symbol" id="audio-icon">🔊</span>
+    </button>
+
+    <!-- Botón Ajustes / Setup -->
+    <button
+      id="btn-open-setup"
+      class="header-btn"
+      title="Configurar partida y reglas"
+      aria-label="Configuración de mesa"
+    >
+      <span class="btn-icon-symbol">⚙️</span>
+    </button>
+  </div>
+</header>
+
+<style>
+  .app-header {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: 0.5rem 0.25rem 0.75rem;
+    border-bottom: 1px solid var(--border-subtle);
+  }
+
+  .header-brand {
+    display: flex;
+    align-items: center;
+    gap: 0.65rem;
+  }
+
+  .domino-logo-icon {
+    font-size: 1.8rem;
+    color: var(--mano-gold);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    filter: drop-shadow(0 0 8px var(--mano-glow));
+  }
+
+  .header-title {
+    font-size: 1.35rem;
+    line-height: 1.1;
+    color: var(--text-main);
+    display: flex;
+    align-items: center;
+    gap: 0.35rem;
+  }
+
+  .header-subtitle {
+    font-size: 0.75rem;
+    color: var(--text-muted);
+    font-weight: 500;
+  }
+
+  .header-actions {
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+  }
+
+  .header-btn {
+    width: 38px;
+    height: 38px;
+    border-radius: var(--radius-full);
+    background: var(--bg-surface-elevated);
+    border: 1px solid var(--border-subtle);
+    color: var(--text-main);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    position: relative;
+  }
+
+  .header-btn:hover {
+    background: rgba(255, 255, 255, 0.1);
+  }
+
+  .header-btn.active {
+    border-color: var(--mano-gold);
+    background: rgba(251, 191, 36, 0.15);
+  }
+
+  .btn-icon-symbol {
+    font-size: 1.05rem;
+    line-height: 1;
+  }
+
+  .status-dot {
+    position: absolute;
+    bottom: 4px;
+    right: 4px;
+    width: 6px;
+    height: 6px;
+    border-radius: 50%;
+    background: #64748b;
+  }
+
+  .status-dot.active {
+    background: #10b981;
+    box-shadow: 0 0 6px #10b981;
+  }
+</style>

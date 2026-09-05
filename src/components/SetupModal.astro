@@ -1,0 +1,440 @@
+---
+// SetupModal.astro - Configuración completa de mesa, jugadores, reglas y salidor inicial
+---
+
+<div class="modal-overlay" id="setup-modal" role="dialog" aria-modal="true" aria-labelledby="modal-title-setup">
+  <div class="modal-sheet setup-sheet">
+    <div class="sheet-handle"></div>
+
+    <div class="modal-header">
+      <div>
+        <h2 id="modal-title-setup">Configuración de Mesa</h2>
+        <p class="modal-subtitle">Equipos, Jugadores y Reglas</p>
+      </div>
+      <button class="btn-icon close-modal-btn" id="btn-close-setup" aria-label="Cerrar">✕</button>
+    </div>
+
+    <form id="setup-form" class="setup-form">
+      <!-- 1. Equipos -->
+      <div class="setup-section">
+        <h3 class="setup-section-title">Equipos</h3>
+        <div class="setup-grid-2">
+          <div class="input-group team-a-input">
+            <label for="setup-team-a-name" class="input-label">
+              <span class="team-dot dot-a"></span>
+              <span>Equipo A</span>
+            </label>
+            <input
+              type="text"
+              id="setup-team-a-name"
+              class="text-input"
+              value="Nosotros"
+              placeholder="Ej. Nosotros"
+              required
+            />
+          </div>
+
+          <div class="input-group team-b-input">
+            <label for="setup-team-b-name" class="input-label">
+              <span class="team-dot dot-b"></span>
+              <span>Equipo B</span>
+            </label>
+            <input
+              type="text"
+              id="setup-team-b-name"
+              class="text-input"
+              value="Ellos"
+              placeholder="Ej. Ellos"
+              required
+            />
+          </div>
+        </div>
+      </div>
+
+      <!-- 2. Jugadores en Cruz -->
+      <div class="setup-section">
+        <h3 class="setup-section-title">Jugadores (Posiciones en Cruz)</h3>
+        <p class="section-description">Disposición fija para rotación de turnos:</p>
+
+        <div class="players-cross-grid">
+          <!-- Asiento 2: Norte (Equipo A) -->
+          <div class="input-group seat-group-north">
+            <label for="setup-player-2" class="input-label">
+              <span class="seat-index-badge badge-a">Asiento 2 (Norte - Eq A)</span>
+            </label>
+            <input type="text" id="setup-player-2" class="text-input" value="Jugador 3" placeholder="Nombre" required />
+          </div>
+
+          <div class="cross-middle-row">
+            <!-- Asiento 3: Oeste (Equipo B) -->
+            <div class="input-group seat-group-west">
+              <label for="setup-player-3" class="input-label">
+                <span class="seat-index-badge badge-b">Asiento 3 (Oeste - Eq B)</span>
+              </label>
+              <input type="text" id="setup-player-3" class="text-input" value="Jugador 4" placeholder="Nombre" required />
+            </div>
+
+            <!-- Asiento 1: Este (Equipo B) -->
+            <div class="input-group seat-group-east">
+              <label for="setup-player-1" class="input-label">
+                <span class="seat-index-badge badge-b">Asiento 1 (Este - Eq B)</span>
+              </label>
+              <input type="text" id="setup-player-1" class="text-input" value="Jugador 2" placeholder="Nombre" required />
+            </div>
+          </div>
+
+          <!-- Asiento 0: Sur (Equipo A) -->
+          <div class="input-group seat-group-south">
+            <label for="setup-player-0" class="input-label">
+              <span class="seat-index-badge badge-a">Asiento 0 (Sur - Eq A)</span>
+            </label>
+            <input type="text" id="setup-player-0" class="text-input" value="Jugador 1" placeholder="Nombre" required />
+          </div>
+        </div>
+      </div>
+
+      <!-- 3. Reglas Generales -->
+      <div class="setup-section">
+        <h3 class="setup-section-title">Reglas de Juego</h3>
+
+        <!-- Meta de Puntos -->
+        <div class="rules-block">
+          <label class="input-label" for="setup-target-score">Meta de Puntos para Ganar</label>
+          <div class="target-input-row">
+            <div class="target-presets">
+              <button type="button" class="preset-btn" data-target="50">50</button>
+              <button type="button" class="preset-btn active" data-target="100">100</button>
+              <button type="button" class="preset-btn" data-target="150">150</button>
+              <button type="button" class="preset-btn" data-target="200">200</button>
+            </div>
+            <input
+              type="number"
+              id="setup-target-score"
+              class="number-input tabular-nums"
+              value="100"
+              min="10"
+              max="1000"
+              step="5"
+              required
+            />
+          </div>
+        </div>
+
+        <!-- Sentido del Juego -->
+        <div class="rules-block">
+          <label class="input-label">Sentido del Juego</label>
+          <div class="radio-cards-grid">
+            <label class="radio-card">
+              <input type="radio" name="setup-direction" value="counter-clockwise" checked />
+              <div class="radio-card-content">
+                <span class="radio-card-icon">↺</span>
+                <strong class="radio-card-title">Antihorario</strong>
+                <span class="radio-card-desc">Tradicional (+1 asiento)</span>
+              </div>
+            </label>
+
+            <label class="radio-card">
+              <input type="radio" name="setup-direction" value="clockwise" />
+              <div class="radio-card-content">
+                <span class="radio-card-icon">↻</span>
+                <strong class="radio-card-title">Horario</strong>
+                <span class="radio-card-desc">Sentido reloj (-1 asiento)</span>
+              </div>
+            </label>
+          </div>
+        </div>
+
+        <!-- Criterio de Salida Subsecuente -->
+        <div class="rules-block">
+          <label class="input-label">Criterio de Salida Subsecuente</label>
+          <div class="radio-cards-stack">
+            <label class="radio-card horizontal">
+              <input type="radio" name="setup-exit-rule" value="rotation" checked />
+              <div class="radio-card-content">
+                <strong class="radio-card-title">Opción A: Rotación Continua</strong>
+                <span class="radio-card-desc">Estándar de Federación (pasa siempre al siguiente asiento)</span>
+              </div>
+            </label>
+
+            <label class="radio-card horizontal">
+              <input type="radio" name="setup-exit-rule" value="winner" />
+              <div class="radio-card-content">
+                <strong class="radio-card-title">Opción B: Tradicional / Calle</strong>
+                <span class="radio-card-desc">Sale el jugador individual que dominó la mano anterior</span>
+              </div>
+            </label>
+          </div>
+        </div>
+
+        <!-- Salidor Ronda 1 -->
+        <div class="rules-block">
+          <label class="input-label">¿Quién realiza la salida en la Ronda 1?</label>
+          <div class="starter-select-grid" id="setup-starter-grid">
+            <button type="button" class="starter-seat-btn active" data-seat="0" id="starter-btn-0">
+              <span class="starter-seat-num">Sur (0)</span>
+              <span class="starter-seat-player" id="preview-starter-0">Jugador 1</span>
+            </button>
+            <button type="button" class="starter-seat-btn" data-seat="1" id="starter-btn-1">
+              <span class="starter-seat-num">Este (1)</span>
+              <span class="starter-seat-player" id="preview-starter-1">Jugador 2</span>
+            </button>
+            <button type="button" class="starter-seat-btn" data-seat="2" id="starter-btn-2">
+              <span class="starter-seat-num">Norte (2)</span>
+              <span class="starter-seat-player" id="preview-starter-2">Jugador 3</span>
+            </button>
+            <button type="button" class="starter-seat-btn" data-seat="3" id="starter-btn-3">
+              <span class="starter-seat-num">Oeste (3)</span>
+              <span class="starter-seat-player" id="preview-starter-3">Jugador 4</span>
+            </button>
+          </div>
+        </div>
+      </div>
+
+      <!-- Botón de Inicio / Guardar -->
+      <button type="submit" class="btn btn-gold btn-save-setup" id="btn-save-setup">
+        <span>Guardar e Iniciar Partida</span>
+      </button>
+    </form>
+  </div>
+</div>
+
+<style>
+  .setup-sheet {
+    max-height: 90vh;
+  }
+
+  .setup-form {
+    display: flex;
+    flex-direction: column;
+    gap: 1.25rem;
+  }
+
+  .setup-section {
+    display: flex;
+    flex-direction: column;
+    gap: 0.65rem;
+    background: rgba(0, 0, 0, 0.2);
+    border: 1px solid var(--border-subtle);
+    border-radius: var(--radius-md);
+    padding: 0.85rem;
+  }
+
+  .setup-section-title {
+    font-size: 0.95rem;
+    color: var(--mano-gold);
+    letter-spacing: 0.02em;
+  }
+
+  .section-description {
+    font-size: 0.75rem;
+    color: var(--text-muted);
+  }
+
+  .setup-grid-2 {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 0.65rem;
+  }
+
+  .input-group {
+    display: flex;
+    flex-direction: column;
+    gap: 0.25rem;
+  }
+
+  .input-label {
+    font-size: 0.75rem;
+    font-weight: 700;
+    color: var(--text-muted);
+    display: flex;
+    align-items: center;
+    gap: 0.35rem;
+  }
+
+  .text-input, .number-input {
+    background: var(--bg-surface);
+    border: 1.5px solid var(--border-strong);
+    border-radius: var(--radius-sm);
+    padding: 0.6rem 0.65rem;
+    color: var(--text-main);
+    font-family: inherit;
+    font-size: 0.95rem;
+    outline: none;
+    transition: border-color 0.15s ease;
+  }
+
+  .text-input:focus, .number-input:focus {
+    border-color: var(--mano-gold);
+  }
+
+  /* Grid en Cruz para Jugadores */
+  .players-cross-grid {
+    display: flex;
+    flex-direction: column;
+    gap: 0.5rem;
+  }
+
+  .cross-middle-row {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 0.5rem;
+  }
+
+  .seat-index-badge {
+    font-size: 0.68rem;
+    font-weight: 700;
+    padding: 0.1rem 0.35rem;
+    border-radius: var(--radius-full);
+  }
+
+  .seat-index-badge.badge-a {
+    background: rgba(59, 130, 246, 0.2);
+    color: #93c5fd;
+  }
+
+  .seat-index-badge.badge-b {
+    background: rgba(249, 115, 22, 0.2);
+    color: #fdba74;
+  }
+
+  /* Bloques de Reglas */
+  .rules-block {
+    display: flex;
+    flex-direction: column;
+    gap: 0.45rem;
+    padding-top: 0.45rem;
+    border-top: 1px solid var(--border-subtle);
+  }
+
+  .target-input-row {
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+  }
+
+  .target-presets {
+    display: flex;
+    gap: 0.35rem;
+    flex: 1;
+  }
+
+  .preset-btn {
+    flex: 1;
+    padding: 0.55rem 0.2rem;
+    background: var(--bg-surface);
+    border: 1px solid var(--border-subtle);
+    border-radius: var(--radius-sm);
+    color: var(--text-muted);
+    font-weight: 700;
+    font-size: 0.85rem;
+  }
+
+  .preset-btn.active {
+    background: var(--mano-gold);
+    color: #1a1500;
+    border-color: var(--mano-gold);
+  }
+
+  .number-input {
+    width: 80px;
+    text-align: center;
+    font-weight: 700;
+  }
+
+  /* Tarjetas de Radio */
+  .radio-cards-grid {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 0.5rem;
+  }
+
+  .radio-cards-stack {
+    display: flex;
+    flex-direction: column;
+    gap: 0.5rem;
+  }
+
+  .radio-card {
+    display: flex;
+    background: var(--bg-surface);
+    border: 1.5px solid var(--border-subtle);
+    border-radius: var(--radius-md);
+    padding: 0.65rem;
+    cursor: pointer;
+    position: relative;
+    transition: all 0.15s ease;
+  }
+
+  .radio-card input {
+    position: absolute;
+    opacity: 0;
+  }
+
+  .radio-card:has(input:checked) {
+    border-color: var(--mano-gold);
+    background: rgba(251, 191, 36, 0.08);
+  }
+
+  .radio-card-content {
+    display: flex;
+    flex-direction: column;
+    gap: 0.15rem;
+  }
+
+  .radio-card-icon {
+    font-size: 1.25rem;
+    color: var(--mano-gold);
+  }
+
+  .radio-card-title {
+    font-size: 0.88rem;
+    color: var(--text-main);
+  }
+
+  .radio-card-desc {
+    font-size: 0.72rem;
+    color: var(--text-muted);
+  }
+
+  /* Selector de Salidor */
+  .starter-select-grid {
+    display: grid;
+    grid-template-columns: repeat(2, 1fr);
+    gap: 0.5rem;
+  }
+
+  .starter-seat-btn {
+    background: var(--bg-surface);
+    border: 1.5px solid var(--border-subtle);
+    border-radius: var(--radius-sm);
+    padding: 0.55rem 0.5rem;
+    display: flex;
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 0.1rem;
+    text-align: left;
+  }
+
+  .starter-seat-btn.active {
+    border-color: var(--mano-gold);
+    background: rgba(251, 191, 36, 0.12);
+  }
+
+  .starter-seat-num {
+    font-size: 0.68rem;
+    color: var(--text-muted);
+    font-weight: 700;
+  }
+
+  .starter-seat-player {
+    font-size: 0.85rem;
+    font-weight: 700;
+    color: var(--text-main);
+  }
+
+  .btn-save-setup {
+    height: 52px;
+    font-size: 1.05rem;
+    margin-top: 0.5rem;
+  }
+</style>

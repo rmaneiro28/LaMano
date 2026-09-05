@@ -1,0 +1,371 @@
+---
+// DominoTable.astro - Representación gráfica de la mesa de dominó en cruz con "La Mano"
+---
+
+<section class="domino-table-wrapper" aria-label="Mesa de Dominó">
+  <div class="table-surface">
+    <!-- Asiento 2: Norte / Jugador 3 (Equipo A) -->
+    <div class="seat-slot seat-north" id="seat-slot-2" data-seat="2">
+      <div class="seat-card team-a-card" id="seat-card-2">
+        <div class="seat-badge-container" id="hand-indicator-2">
+          <!-- Se inyecta dinámicamente si tiene la mano -->
+        </div>
+        <div class="player-avatar avatar-team-a">
+          <span class="avatar-icon">👤</span>
+        </div>
+        <div class="player-info">
+          <span class="player-name" id="seat-player-name-2">Jugador 3</span>
+          <span class="player-team-label" id="seat-player-team-2">Nosotros</span>
+        </div>
+      </div>
+    </div>
+
+    <!-- Centro de la mesa: Sentido de rotación y reglas -->
+    <div class="table-center">
+      <div class="center-content">
+        <div class="rotation-indicator" id="rotation-indicator" title="Sentido de rotación">
+          <span class="rotation-symbol" id="rotation-symbol">↺</span>
+          <span class="rotation-label" id="rotation-text">Antihorario</span>
+        </div>
+        <div class="table-brand-mark">
+          <span class="domino-tile-symbol">🁢</span>
+          <span class="rule-label" id="exit-rule-badge">Rotación</span>
+        </div>
+      </div>
+    </div>
+
+    <!-- Asiento 3: Oeste / Jugador 4 (Equipo B) -->
+    <div class="seat-slot seat-west" id="seat-slot-3" data-seat="3">
+      <div class="seat-card team-b-card" id="seat-card-3">
+        <div class="seat-badge-container" id="hand-indicator-3">
+          <!-- Badge La Mano -->
+        </div>
+        <div class="player-avatar avatar-team-b">
+          <span class="avatar-icon">👤</span>
+        </div>
+        <div class="player-info">
+          <span class="player-name" id="seat-player-name-3">Jugador 4</span>
+          <span class="player-team-label" id="seat-player-team-3">Ellos</span>
+        </div>
+      </div>
+    </div>
+
+    <!-- Asiento 1: Este / Jugador 2 (Equipo B) -->
+    <div class="seat-slot seat-east" id="seat-slot-1" data-seat="1">
+      <div class="seat-card team-b-card" id="seat-card-1">
+        <div class="seat-badge-container" id="hand-indicator-1">
+          <!-- Badge La Mano -->
+        </div>
+        <div class="player-avatar avatar-team-b">
+          <span class="avatar-icon">👤</span>
+        </div>
+        <div class="player-info">
+          <span class="player-name" id="seat-player-name-1">Jugador 2</span>
+          <span class="player-team-label" id="seat-player-team-1">Ellos</span>
+        </div>
+      </div>
+    </div>
+
+    <!-- Asiento 0: Sur / Jugador 1 (Equipo A) -->
+    <div class="seat-slot seat-south" id="seat-slot-0" data-seat="0">
+      <div class="seat-card team-a-card" id="seat-card-0">
+        <div class="seat-badge-container" id="hand-indicator-0">
+          <!-- Badge La Mano -->
+        </div>
+        <div class="player-avatar avatar-team-a">
+          <span class="avatar-icon">👤</span>
+        </div>
+        <div class="player-info">
+          <span class="player-name" id="seat-player-name-0">Jugador 1</span>
+          <span class="player-team-label" id="seat-player-team-0">Nosotros</span>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Banner contextual de salida actual -->
+  <div class="turn-banner" id="turn-banner">
+    <div class="turn-banner-icon float-mano">✋</div>
+    <div class="turn-banner-text">
+      <span class="turn-caption">Tiene la salida:</span>
+      <strong class="turn-player-name" id="banner-starter-name">Jugador 1</strong>
+      <span class="turn-team-badge" id="banner-starter-team">Equipo A</span>
+    </div>
+  </div>
+</section>
+
+<style>
+  .domino-table-wrapper {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 0.65rem;
+    width: 100%;
+  }
+
+  .table-surface {
+    position: relative;
+    width: 100%;
+    aspect-ratio: 1 / 0.96;
+    max-height: 380px;
+    background: radial-gradient(circle at 50% 50%, #17382c 0%, #0d211a 75%, #081611 100%);
+    border: 3px solid #234839;
+    border-radius: var(--radius-lg);
+    box-shadow: inset 0 0 35px rgba(0, 0, 0, 0.7), var(--shadow-md);
+    display: grid;
+    grid-template-columns: 1fr 1.2fr 1fr;
+    grid-template-rows: 1fr 1fr 1fr;
+    padding: 0.5rem;
+    overflow: hidden;
+  }
+
+  /* Distribución en Cruz de los Asientos */
+  .seat-slot {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    z-index: 2;
+  }
+
+  .seat-north {
+    grid-column: 2;
+    grid-row: 1;
+    align-items: flex-start;
+  }
+
+  .seat-south {
+    grid-column: 2;
+    grid-row: 3;
+    align-items: flex-end;
+  }
+
+  .seat-west {
+    grid-column: 1;
+    grid-row: 2;
+    justify-content: flex-start;
+  }
+
+  .seat-east {
+    grid-column: 3;
+    grid-row: 2;
+    justify-content: flex-end;
+  }
+
+  /* Tarjetas de Jugador */
+  .seat-card {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    background: rgba(13, 24, 20, 0.88);
+    backdrop-filter: blur(8px);
+    border: 1.5px solid var(--border-subtle);
+    border-radius: var(--radius-md);
+    padding: 0.35rem 0.55rem;
+    width: 105px;
+    position: relative;
+    transition: all 0.25s ease;
+    box-shadow: 0 4px 10px rgba(0, 0, 0, 0.4);
+  }
+
+  .seat-card.is-hand-starter {
+    border-color: var(--mano-gold);
+    background: rgba(28, 42, 33, 0.95);
+    box-shadow: 0 0 20px var(--mano-glow), 0 4px 14px rgba(0, 0, 0, 0.6);
+    transform: scale(1.04);
+  }
+
+  .seat-badge-container {
+    position: absolute;
+    top: -12px;
+    display: flex;
+    justify-content: center;
+    width: 100%;
+    pointer-events: none;
+  }
+
+  .mano-badge {
+    background: linear-gradient(135deg, #fef08a 0%, #f59e0b 100%);
+    color: #1a1500;
+    font-size: 0.62rem;
+    font-weight: 800;
+    letter-spacing: 0.05em;
+    padding: 0.15rem 0.45rem;
+    border-radius: var(--radius-full);
+    display: inline-flex;
+    align-items: center;
+    gap: 0.25rem;
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.5);
+    animation: pulseGlow 2s infinite ease-in-out;
+  }
+
+  .player-avatar {
+    width: 28px;
+    height: 28px;
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 0.9rem;
+    margin-bottom: 0.2rem;
+  }
+
+  .avatar-team-a {
+    background: rgba(59, 130, 246, 0.2);
+    border: 1.5px solid var(--team-a-base);
+    color: #93c5fd;
+  }
+
+  .avatar-team-b {
+    background: rgba(249, 115, 22, 0.2);
+    border: 1.5px solid var(--team-b-base);
+    color: #fdba74;
+  }
+
+  .player-info {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    text-align: center;
+    width: 100%;
+  }
+
+  .player-name {
+    font-size: 0.78rem;
+    font-weight: 700;
+    color: var(--text-main);
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    max-width: 90px;
+    line-height: 1.2;
+  }
+
+  .player-team-label {
+    font-size: 0.65rem;
+    color: var(--text-muted);
+    font-weight: 600;
+  }
+
+  /* Centro de la mesa */
+  .table-center {
+    grid-column: 2;
+    grid-row: 2;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    z-index: 1;
+  }
+
+  .center-content {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    width: 86px;
+    height: 86px;
+    border-radius: 50%;
+    background: rgba(8, 20, 15, 0.65);
+    border: 1px dashed rgba(255, 255, 255, 0.15);
+    gap: 0.2rem;
+  }
+
+  .rotation-indicator {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    line-height: 1;
+  }
+
+  .rotation-symbol {
+    font-size: 1.2rem;
+    color: var(--mano-gold);
+    transition: transform 0.4s ease;
+  }
+
+  .rotation-label {
+    font-size: 0.58rem;
+    color: var(--text-muted);
+    font-weight: 700;
+    letter-spacing: 0.02em;
+    text-transform: uppercase;
+  }
+
+  .table-brand-mark {
+    display: flex;
+    align-items: center;
+    gap: 0.2rem;
+  }
+
+  .domino-tile-symbol {
+    font-size: 1rem;
+    color: #e2e8f0;
+    opacity: 0.7;
+  }
+
+  .rule-label {
+    font-size: 0.55rem;
+    color: #cbd5e1;
+    background: rgba(255, 255, 255, 0.08);
+    padding: 0.1rem 0.35rem;
+    border-radius: 4px;
+    font-weight: 600;
+  }
+
+  /* Banner de turno debajo de la mesa */
+  .turn-banner {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 0.65rem;
+    width: 100%;
+    background: rgba(251, 191, 36, 0.1);
+    border: 1px solid rgba(251, 191, 36, 0.3);
+    border-radius: var(--radius-md);
+    padding: 0.5rem 0.85rem;
+    backdrop-filter: blur(4px);
+  }
+
+  .turn-banner-icon {
+    font-size: 1.4rem;
+    color: var(--mano-gold);
+    line-height: 1;
+  }
+
+  .turn-banner-text {
+    display: flex;
+    align-items: center;
+    gap: 0.4rem;
+    font-size: 0.85rem;
+    flex-wrap: wrap;
+    justify-content: center;
+  }
+
+  .turn-caption {
+    color: var(--text-muted);
+  }
+
+  .turn-player-name {
+    color: var(--mano-gold);
+    font-weight: 800;
+    font-size: 0.95rem;
+  }
+
+  .turn-team-badge {
+    font-size: 0.65rem;
+    padding: 0.15rem 0.4rem;
+    border-radius: var(--radius-full);
+    font-weight: 700;
+    background: rgba(255, 255, 255, 0.1);
+  }
+
+  @media (min-width: 420px) {
+    .seat-card {
+      width: 116px;
+      padding: 0.45rem 0.65rem;
+    }
+    .player-name {
+      font-size: 0.82rem;
+      max-width: 102px;
+    }
+  }
+</style>

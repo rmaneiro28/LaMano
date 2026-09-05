@@ -1,0 +1,403 @@
+/* Sistema de Diseño LaMano - Dominó Mobile-First */
+@import url('https://fonts.googleapis.com/css2?family=Outfit:wght@400;500;600;700;800;900&family=Plus+Jakarta+Sans:wght@400;500;600;700&display=swap');
+
+:root {
+  /* Paleta Base - Fieltro y Juego */
+  --bg-primary: #0b1411;
+  --bg-surface: #13221d;
+  --bg-surface-elevated: #1b2f28;
+  --bg-surface-glass: rgba(19, 34, 29, 0.85);
+  --border-subtle: rgba(255, 255, 255, 0.08);
+  --border-strong: rgba(255, 255, 255, 0.16);
+  
+  /* Textos - Alto Contraste para Luz Solar */
+  --text-main: #f8fafc;
+  --text-muted: #94a3b8;
+  --text-subtle: #64748b;
+  --text-inverse: #020617;
+
+  /* Equipos */
+  --team-a-base: #3b82f6;
+  --team-a-dark: #1d4ed8;
+  --team-a-glow: rgba(59, 130, 246, 0.35);
+  --team-a-bg: rgba(59, 130, 246, 0.14);
+
+  --team-b-base: #f97316;
+  --team-b-dark: #c2410c;
+  --team-b-glow: rgba(249, 115, 22, 0.35);
+  --team-b-bg: rgba(249, 115, 22, 0.14);
+
+  /* La Mano / Acento Dorado de Salida */
+  --mano-gold: #fbbf24;
+  --mano-gold-strong: #f59e0b;
+  --mano-glow: rgba(251, 191, 36, 0.5);
+
+  /* Acentos de Éxito / Alerta */
+  --success: #10b981;
+  --danger: #ef4444;
+
+  /* Tipografía */
+  --font-display: 'Outfit', -apple-system, BlinkMacSystemFont, sans-serif;
+  --font-body: 'Plus Jakarta Sans', -apple-system, BlinkMacSystemFont, sans-serif;
+
+  /* Radios */
+  --radius-sm: 8px;
+  --radius-md: 14px;
+  --radius-lg: 20px;
+  --radius-full: 9999px;
+
+  /* Sombras */
+  --shadow-sm: 0 2px 8px rgba(0, 0, 0, 0.25);
+  --shadow-md: 0 6px 20px rgba(0, 0, 0, 0.35);
+  --shadow-lg: 0 12px 36px rgba(0, 0, 0, 0.5);
+  --shadow-glow: 0 0 25px var(--mano-glow);
+}
+
+*, *::before, *::after {
+  box-sizing: border-box;
+  margin: 0;
+  padding: 0;
+  -webkit-tap-highlight-color: transparent;
+}
+
+html {
+  font-family: var(--font-body);
+  background-color: var(--bg-primary);
+  color: var(--text-main);
+  line-height: 1.4;
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+  font-size: 16px;
+  user-select: none;
+  -webkit-user-select: none;
+  touch-action: manipulation;
+}
+
+body {
+  min-height: 100vh;
+  min-height: 100dvh;
+  display: flex;
+  flex-direction: column;
+  background: radial-gradient(circle at 50% 10%, #152c23 0%, var(--bg-primary) 70%);
+  overflow-x: hidden;
+}
+
+/* Tipografía y números */
+h1, h2, h3, h4, .font-display {
+  font-family: var(--font-display);
+  font-weight: 700;
+  letter-spacing: -0.02em;
+}
+
+.tabular-nums {
+  font-variant-numeric: tabular-nums;
+  font-feature-settings: "tnum";
+}
+
+/* Layout Contenedor */
+.app-container {
+  display: flex;
+  flex-direction: column;
+  width: 100%;
+  max-width: 520px;
+  margin: 0 auto;
+  min-height: 100vh;
+  min-height: 100dvh;
+  padding: 0.75rem 1rem 1.5rem;
+  gap: 0.85rem;
+  position: relative;
+}
+
+/* Botones y Controles */
+button {
+  font-family: inherit;
+  cursor: pointer;
+  border: none;
+  background: none;
+  outline: none;
+  transition: transform 0.12s ease, opacity 0.15s ease, background-color 0.15s ease, box-shadow 0.15s ease;
+}
+
+button:active {
+  transform: scale(0.97);
+}
+
+.btn {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 0.5rem;
+  padding: 0.75rem 1.25rem;
+  border-radius: var(--radius-md);
+  font-weight: 600;
+  font-size: 1rem;
+  border: 1px solid transparent;
+  transition: all 0.15s ease;
+}
+
+.btn-primary {
+  background: linear-gradient(135deg, #10b981 0%, #059669 100%);
+  color: #ffffff;
+  box-shadow: 0 4px 14px rgba(16, 185, 129, 0.35);
+}
+
+.btn-primary:active {
+  box-shadow: 0 2px 6px rgba(16, 185, 129, 0.25);
+}
+
+.btn-secondary {
+  background: var(--bg-surface-elevated);
+  color: var(--text-main);
+  border-color: var(--border-strong);
+}
+
+.btn-secondary:hover {
+  background: rgba(255, 255, 255, 0.08);
+}
+
+.btn-gold {
+  background: linear-gradient(135deg, var(--mano-gold) 0%, var(--mano-gold-strong) 100%);
+  color: #1a1500;
+  font-weight: 700;
+  box-shadow: 0 4px 16px var(--mano-glow);
+}
+
+.btn-sm {
+  padding: 0.4rem 0.75rem;
+  font-size: 0.85rem;
+  border-radius: var(--radius-sm);
+}
+
+.btn-icon {
+  width: 42px;
+  height: 42px;
+  border-radius: var(--radius-full);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: var(--bg-surface-elevated);
+  border: 1px solid var(--border-subtle);
+  color: var(--text-main);
+  flex-shrink: 0;
+}
+
+.btn-icon:hover {
+  background: rgba(255, 255, 255, 0.1);
+}
+
+/* Modales y Bottom Sheets */
+.modal-overlay {
+  position: fixed;
+  inset: 0;
+  background: rgba(0, 0, 0, 0.75);
+  backdrop-filter: blur(6px);
+  -webkit-backdrop-filter: blur(6px);
+  z-index: 100;
+  display: flex;
+  align-items: flex-end;
+  justify-content: center;
+  opacity: 0;
+  pointer-events: none;
+  transition: opacity 0.25s ease;
+}
+
+.modal-overlay.active {
+  opacity: 1;
+  pointer-events: auto;
+}
+
+.modal-sheet {
+  background: var(--bg-surface);
+  border: 1px solid var(--border-strong);
+  border-radius: var(--radius-lg) var(--radius-lg) 0 0;
+  width: 100%;
+  max-width: 520px;
+  max-height: 92vh;
+  overflow-y: auto;
+  padding: 1.25rem 1.25rem 2rem;
+  box-shadow: var(--shadow-lg);
+  transform: translateY(100%);
+  transition: transform 0.3s cubic-bezier(0.16, 1, 0.3, 1);
+  display: flex;
+  flex-direction: column;
+  gap: 1.1rem;
+}
+
+.modal-overlay.active .modal-sheet {
+  transform: translateY(0);
+}
+
+.modal-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  border-bottom: 1px solid var(--border-subtle);
+  padding-bottom: 0.75rem;
+}
+
+.modal-header h2 {
+  font-size: 1.25rem;
+  color: var(--text-main);
+}
+
+.sheet-handle {
+  width: 40px;
+  height: 4px;
+  border-radius: var(--radius-full);
+  background: var(--border-strong);
+  margin: -0.25rem auto 0.5rem;
+}
+
+/* Badges e Iconos */
+.badge {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.3rem;
+  padding: 0.2rem 0.6rem;
+  border-radius: var(--radius-full);
+  font-size: 0.75rem;
+  font-weight: 700;
+  letter-spacing: 0.04em;
+  text-transform: uppercase;
+}
+
+.badge-gold {
+  background: var(--mano-gold);
+  color: #1a1500;
+  box-shadow: 0 0 10px var(--mano-glow);
+}
+
+.badge-team-a {
+  background: var(--team-a-base);
+  color: #ffffff;
+}
+
+.badge-team-b {
+  background: var(--team-b-base);
+  color: #ffffff;
+}
+
+/* Keypad Numérico Virtual para Anotación Rápida */
+.keypad-grid {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 0.5rem;
+}
+
+.keypad-btn {
+  height: 56px;
+  background: var(--bg-surface-elevated);
+  border: 1px solid var(--border-subtle);
+  border-radius: var(--radius-md);
+  color: var(--text-main);
+  font-size: 1.5rem;
+  font-weight: 700;
+  font-family: var(--font-display);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transition: all 0.1s ease;
+}
+
+.keypad-btn:active {
+  background: rgba(255, 255, 255, 0.15);
+  transform: scale(0.95);
+}
+
+.keypad-btn.action-btn {
+  background: rgba(255, 255, 255, 0.05);
+  font-size: 1rem;
+  color: var(--text-muted);
+}
+
+/* Chips de suma rápida */
+.quick-add-row {
+  display: flex;
+  gap: 0.5rem;
+  overflow-x: auto;
+  padding-bottom: 0.25rem;
+}
+
+.quick-chip {
+  flex: 1;
+  padding: 0.5rem 0;
+  background: rgba(255, 255, 255, 0.06);
+  border: 1px solid var(--border-subtle);
+  border-radius: var(--radius-sm);
+  color: var(--mano-gold);
+  font-weight: 700;
+  font-size: 0.95rem;
+  text-align: center;
+}
+
+.quick-chip:active {
+  background: var(--mano-gold);
+  color: #1a1500;
+}
+
+/* Animaciones */
+@keyframes pulseGlow {
+  0%, 100% {
+    box-shadow: 0 0 15px var(--mano-glow), inset 0 0 10px rgba(251, 191, 36, 0.2);
+    border-color: var(--mano-gold);
+  }
+  50% {
+    box-shadow: 0 0 30px var(--mano-glow), inset 0 0 15px rgba(251, 191, 36, 0.4);
+    border-color: #fde047;
+  }
+}
+
+@keyframes floatMano {
+  0%, 100% {
+    transform: translateY(0px) scale(1);
+  }
+  50% {
+    transform: translateY(-4px) scale(1.08);
+  }
+}
+
+.pulse-glow {
+  animation: pulseGlow 2s infinite ease-in-out;
+}
+
+.float-mano {
+  animation: floatMano 1.8s infinite ease-in-out;
+}
+
+/* Ficha de Dominó Visual */
+.domino-tile-icon {
+  display: inline-flex;
+  flex-direction: column;
+  width: 20px;
+  height: 36px;
+  background: #f8fafc;
+  border-radius: 3px;
+  border: 1px solid #cbd5e1;
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.3);
+  position: relative;
+  overflow: hidden;
+  vertical-align: middle;
+}
+
+.domino-tile-icon::after {
+  content: '';
+  position: absolute;
+  top: 50%;
+  left: 10%;
+  right: 10%;
+  height: 1px;
+  background: #94a3b8;
+}
+
+/* Scrollbar sutil */
+::-webkit-scrollbar {
+  width: 6px;
+  height: 6px;
+}
+::-webkit-scrollbar-track {
+  background: rgba(0, 0, 0, 0.1);
+}
+::-webkit-scrollbar-thumb {
+  background: var(--border-strong);
+  border-radius: 3px;
+}

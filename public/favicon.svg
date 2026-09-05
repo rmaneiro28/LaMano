@@ -1,0 +1,20 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 100 100">
+  <defs>
+    <linearGradient id="bgGrad" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" stop-color="#142c23" />
+      <stop offset="100%" stop-color="#0a1713" />
+    </linearGradient>
+    <linearGradient id="goldGrad" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" stop-color="#fde047" />
+      <stop offset="100%" stop-color="#d97706" />
+    </linearGradient>
+  </defs>
+  <rect width="100" height="100" rx="24" fill="url(#bgGrad)" stroke="#224235" stroke-width="4"/>
+  <!-- Ficha de dominó estilizada -->
+  <rect x="22" y="16" width="56" height="34" rx="6" fill="#f8fafc" stroke="#cbd5e1" stroke-width="2"/>
+  <line x1="50" y1="16" x2="50" y2="50" stroke="#94a3b8" stroke-width="2"/>
+  <circle cx="36" cy="33" r="4" fill="#0f172a"/>
+  <circle cx="64" cy="33" r="4" fill="#0f172a"/>
+  <!-- Mano dorada estilizada -->
+  <text x="50" y="86" font-size="34" text-anchor="middle" dominant-baseline="central">✋</text>
+</svg>

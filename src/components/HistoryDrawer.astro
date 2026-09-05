@@ -1,0 +1,164 @@
+---
+// HistoryDrawer.astro - Historial detallado de todas las manos jugadas
+---
+
+<div class="modal-overlay" id="history-drawer-modal" role="dialog" aria-modal="true" aria-labelledby="modal-title-history">
+  <div class="modal-sheet history-sheet">
+    <div class="sheet-handle"></div>
+
+    <div class="modal-header">
+      <div>
+        <h2 id="modal-title-history">Historial de Manos</h2>
+        <p class="modal-subtitle" id="history-total-rounds-text">0 manos registradas</p>
+      </div>
+      <button class="btn-icon close-modal-btn" id="btn-close-history" aria-label="Cerrar Historial">✕</button>
+    </div>
+
+    <!-- Lista de Manos -->
+    <div class="history-list-container" id="history-list-container">
+      <div class="history-empty-state" id="history-empty-state">
+        <span class="empty-icon">🀰</span>
+        <p>Aún no hay manos registradas en esta partida.</p>
+        <span class="empty-hint">Al cerrar la primera mano aparecerá aquí el desglose.</span>
+      </div>
+
+      <div class="history-items-wrapper" id="history-items-wrapper">
+        <!-- Renders dinámicos de cada mano -->
+      </div>
+    </div>
+  </div>
+</div>
+
+<style>
+  .history-sheet {
+    max-height: 85vh;
+  }
+
+  .history-list-container {
+    display: flex;
+    flex-direction: column;
+    gap: 0.65rem;
+    overflow-y: auto;
+    padding-right: 0.2rem;
+    max-height: 60vh;
+  }
+
+  .history-empty-state {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    text-align: center;
+    padding: 3rem 1rem;
+    color: var(--text-muted);
+    gap: 0.5rem;
+  }
+
+  .empty-icon {
+    font-size: 2.5rem;
+    opacity: 0.4;
+  }
+
+  .empty-hint {
+    font-size: 0.8rem;
+    color: var(--text-subtle);
+  }
+
+  .history-items-wrapper {
+    display: flex;
+    flex-direction: column;
+    gap: 0.65rem;
+  }
+
+  /* Estilos para cada tarjeta de mano en el historial */
+  :global(.history-card) {
+    background: var(--bg-surface-elevated);
+    border: 1px solid var(--border-subtle);
+    border-radius: var(--radius-md);
+    padding: 0.75rem 0.85rem;
+    display: flex;
+    flex-direction: column;
+    gap: 0.45rem;
+  }
+
+  :global(.history-card.winner-team-a) {
+    border-left: 4px solid var(--team-a-base);
+  }
+
+  :global(.history-card.winner-team-b) {
+    border-left: 4px solid var(--team-b-base);
+  }
+
+  :global(.history-card-header) {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    font-size: 0.82rem;
+  }
+
+  :global(.history-round-tag) {
+    font-weight: 800;
+    color: var(--text-main);
+  }
+
+  :global(.history-starter-info) {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.25rem;
+    color: var(--mano-gold);
+    font-size: 0.75rem;
+    font-weight: 700;
+  }
+
+  :global(.history-card-body) {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+  }
+
+  :global(.history-winner-details) {
+    display: flex;
+    flex-direction: column;
+    gap: 0.15rem;
+  }
+
+  :global(.history-winner-name) {
+    font-size: 0.95rem;
+    font-weight: 700;
+    color: var(--text-main);
+  }
+
+  :global(.history-type-badge) {
+    font-size: 0.68rem;
+    color: var(--text-muted);
+    display: inline-flex;
+    align-items: center;
+    gap: 0.25rem;
+  }
+
+  :global(.history-points-block) {
+    display: flex;
+    flex-direction: column;
+    align-items: flex-end;
+  }
+
+  :global(.history-points-gain) {
+    font-family: var(--font-display);
+    font-size: 1.3rem;
+    font-weight: 800;
+  }
+
+  :global(.history-points-gain.gain-team-a) {
+    color: #60a5fa;
+  }
+
+  :global(.history-points-gain.gain-team-b) {
+    color: #fb923c;
+  }
+
+  :global(.history-running-score) {
+    font-size: 0.75rem;
+    color: var(--text-muted);
+    font-family: var(--font-display);
+  }
+</style>
