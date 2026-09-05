@@ -1,5 +1,5 @@
 ---
-// index.astro - Página Principal de LaMano
+// index.astro - Página Principal de Wicho Domino Club
 import Layout from '../layouts/Layout.astro';
 import Header from '../components/Header.astro';
 import ScoreBoard from '../components/ScoreBoard.astro';
@@ -9,14 +9,18 @@ import CloseHandModal from '../components/CloseHandModal.astro';
 import HistoryDrawer from '../components/HistoryDrawer.astro';
 import SetupModal from '../components/SetupModal.astro';
 import VictoryModal from '../components/VictoryModal.astro';
+import IntroSplash from '../components/IntroSplash.astro';
 ---
 
 <Layout>
+  <!-- Animación y Video de Entrada Wicho Domino Club -->
+  <IntroSplash />
+
   <main class="app-container">
-    <!-- Barra Superior -->
+    <!-- Barra Superior con Logo Oficial -->
     <Header />
 
-    <!-- Marcador Global Grande -->
+    <!-- Marcador de Anotación Manual en Dos Columnas -->
     <ScoreBoard />
 
     <!-- Mesa de Dominó con Representación Gráfica e Indicador de "La Mano" -->

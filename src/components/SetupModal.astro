@@ -1,5 +1,5 @@
 ---
-// SetupModal.astro - Configuración completa de mesa, jugadores, reglas y salidor inicial
+// SetupModal.astro - Configuración de equipos, jugadores y modalidad de serie
 ---
 
 <div class="modal-overlay" id="setup-modal" role="dialog" aria-modal="true" aria-labelledby="modal-title-setup">
@@ -9,13 +9,52 @@
     <div class="modal-header">
       <div>
         <h2 id="modal-title-setup">Configuración de Mesa</h2>
-        <p class="modal-subtitle">Equipos, Jugadores y Reglas</p>
+        <p class="modal-subtitle">Wicho Domino Club • 100 Puntos • Antihorario</p>
       </div>
       <button class="btn-icon close-modal-btn" id="btn-close-setup" aria-label="Cerrar">✕</button>
     </div>
 
     <form id="setup-form" class="setup-form">
-      <!-- 1. Equipos -->
+      <!-- 1. Modalidad de Serie -->
+      <div class="setup-section match-mode-section">
+        <div class="section-title-with-badge">
+          <span class="mano-icon">🏆</span>
+          <div>
+            <h3 class="setup-section-title">Modalidad de Serie</h3>
+            <span class="section-required-badge">Requerido</span>
+          </div>
+        </div>
+
+        <div class="match-mode-grid">
+          <!-- Bo3 -->
+          <button type="button" class="match-mode-btn active" id="mode-btn-bo3" data-mode="bo3" aria-pressed="true">
+            <div class="mode-trophy-row">
+              <span class="mode-trophy filled">🏆</span>
+              <span class="mode-trophy filled">🏆</span>
+              <span class="mode-trophy empty">🥈</span>
+            </div>
+            <strong class="mode-label">Mejor de 3</strong>
+            <span class="mode-wins-needed">Primero en ganar <em>2 partidas</em></span>
+            <div class="mode-selected-pill">✓ Seleccionado</div>
+          </button>
+
+          <!-- Bo5 -->
+          <button type="button" class="match-mode-btn" id="mode-btn-bo5" data-mode="bo5" aria-pressed="false">
+            <div class="mode-trophy-row">
+              <span class="mode-trophy filled">🏆</span>
+              <span class="mode-trophy filled">🏆</span>
+              <span class="mode-trophy filled">🏆</span>
+              <span class="mode-trophy empty">🥈</span>
+              <span class="mode-trophy empty">🥈</span>
+            </div>
+            <strong class="mode-label">Mejor de 5</strong>
+            <span class="mode-wins-needed">Primero en ganar <em>3 partidas</em></span>
+            <div class="mode-selected-pill">✓ Seleccionado</div>
+          </button>
+        </div>
+      </div>
+
+      <!-- 2. Equipos -->
       <div class="setup-section">
         <h3 class="setup-section-title">Equipos</h3>
         <div class="setup-grid-2">
@@ -51,148 +90,73 @@
         </div>
       </div>
 
-      <!-- 2. Jugadores en Cruz -->
+      <!-- 3. Jugadores en Cruz -->
       <div class="setup-section">
-        <h3 class="setup-section-title">Jugadores (Posiciones en Cruz)</h3>
-        <p class="section-description">Disposición fija para rotación de turnos:</p>
+        <h3 class="setup-section-title">Jugadores (Posiciones en Mesa)</h3>
+        <p class="section-description">Rotación continua antihoraria:</p>
 
         <div class="players-cross-grid">
           <!-- Asiento 2: Norte (Equipo A) -->
           <div class="input-group seat-group-north">
             <label for="setup-player-2" class="input-label">
-              <span class="seat-index-badge badge-a">Asiento 2 (Norte - Eq A)</span>
+              <span class="seat-index-badge badge-a">Norte (Eq A)</span>
             </label>
-            <input type="text" id="setup-player-2" class="text-input" value="Jugador 3" placeholder="Nombre" required />
+            <input type="text" id="setup-player-2" class="text-input player-name-input" data-seat="2" value="Jugador 3" placeholder="Nombre Jugador 3" required />
           </div>
 
           <div class="cross-middle-row">
             <!-- Asiento 3: Oeste (Equipo B) -->
             <div class="input-group seat-group-west">
               <label for="setup-player-3" class="input-label">
-                <span class="seat-index-badge badge-b">Asiento 3 (Oeste - Eq B)</span>
+                <span class="seat-index-badge badge-b">Oeste (Eq B)</span>
               </label>
-              <input type="text" id="setup-player-3" class="text-input" value="Jugador 4" placeholder="Nombre" required />
+              <input type="text" id="setup-player-3" class="text-input player-name-input" data-seat="3" value="Jugador 4" placeholder="Nombre Jugador 4" required />
             </div>
 
             <!-- Asiento 1: Este (Equipo B) -->
             <div class="input-group seat-group-east">
               <label for="setup-player-1" class="input-label">
-                <span class="seat-index-badge badge-b">Asiento 1 (Este - Eq B)</span>
+                <span class="seat-index-badge badge-b">Este (Eq B)</span>
               </label>
-              <input type="text" id="setup-player-1" class="text-input" value="Jugador 2" placeholder="Nombre" required />
+              <input type="text" id="setup-player-1" class="text-input player-name-input" data-seat="1" value="Jugador 2" placeholder="Nombre Jugador 2" required />
             </div>
           </div>
 
           <!-- Asiento 0: Sur (Equipo A) -->
           <div class="input-group seat-group-south">
             <label for="setup-player-0" class="input-label">
-              <span class="seat-index-badge badge-a">Asiento 0 (Sur - Eq A)</span>
+              <span class="seat-index-badge badge-a">Sur (Eq A)</span>
             </label>
-            <input type="text" id="setup-player-0" class="text-input" value="Jugador 1" placeholder="Nombre" required />
+            <input type="text" id="setup-player-0" class="text-input player-name-input" data-seat="0" value="Jugador 1" placeholder="Nombre Jugador 1" required />
           </div>
         </div>
       </div>
 
-      <!-- 3. Reglas Generales -->
-      <div class="setup-section">
-        <h3 class="setup-section-title">Reglas de Juego</h3>
+      <!-- Aviso de salidor -->
+      <div class="starter-reminder">
+        <span class="starter-reminder-icon">✋</span>
+        <span>El salidor de la 1ª partida se elige <strong>tocando directamente al jugador en la mesa</strong></span>
+      </div>
 
-        <!-- Meta de Puntos -->
-        <div class="rules-block">
-          <label class="input-label" for="setup-target-score">Meta de Puntos para Ganar</label>
-          <div class="target-input-row">
-            <div class="target-presets">
-              <button type="button" class="preset-btn" data-target="50">50</button>
-              <button type="button" class="preset-btn active" data-target="100">100</button>
-              <button type="button" class="preset-btn" data-target="150">150</button>
-              <button type="button" class="preset-btn" data-target="200">200</button>
-            </div>
-            <input
-              type="number"
-              id="setup-target-score"
-              class="number-input tabular-nums"
-              value="100"
-              min="10"
-              max="1000"
-              step="5"
-              required
-            />
-          </div>
+      <!-- Reglas fijas informativas -->
+      <div class="rules-fixed-info">
+        <div class="rule-chip">
+          <span>🎯</span>
+          <span>Meta: <strong>100 pts</strong></span>
         </div>
-
-        <!-- Sentido del Juego -->
-        <div class="rules-block">
-          <label class="input-label">Sentido del Juego</label>
-          <div class="radio-cards-grid">
-            <label class="radio-card">
-              <input type="radio" name="setup-direction" value="counter-clockwise" checked />
-              <div class="radio-card-content">
-                <span class="radio-card-icon">↺</span>
-                <strong class="radio-card-title">Antihorario</strong>
-                <span class="radio-card-desc">Tradicional (+1 asiento)</span>
-              </div>
-            </label>
-
-            <label class="radio-card">
-              <input type="radio" name="setup-direction" value="clockwise" />
-              <div class="radio-card-content">
-                <span class="radio-card-icon">↻</span>
-                <strong class="radio-card-title">Horario</strong>
-                <span class="radio-card-desc">Sentido reloj (-1 asiento)</span>
-              </div>
-            </label>
-          </div>
+        <div class="rule-chip">
+          <span>↺</span>
+          <span>Sentido: <strong>Antihorario</strong></span>
         </div>
-
-        <!-- Criterio de Salida Subsecuente -->
-        <div class="rules-block">
-          <label class="input-label">Criterio de Salida Subsecuente</label>
-          <div class="radio-cards-stack">
-            <label class="radio-card horizontal">
-              <input type="radio" name="setup-exit-rule" value="rotation" checked />
-              <div class="radio-card-content">
-                <strong class="radio-card-title">Opción A: Rotación Continua</strong>
-                <span class="radio-card-desc">Estándar de Federación (pasa siempre al siguiente asiento)</span>
-              </div>
-            </label>
-
-            <label class="radio-card horizontal">
-              <input type="radio" name="setup-exit-rule" value="winner" />
-              <div class="radio-card-content">
-                <strong class="radio-card-title">Opción B: Tradicional / Calle</strong>
-                <span class="radio-card-desc">Sale el jugador individual que dominó la mano anterior</span>
-              </div>
-            </label>
-          </div>
-        </div>
-
-        <!-- Salidor Ronda 1 -->
-        <div class="rules-block">
-          <label class="input-label">¿Quién realiza la salida en la Ronda 1?</label>
-          <div class="starter-select-grid" id="setup-starter-grid">
-            <button type="button" class="starter-seat-btn active" data-seat="0" id="starter-btn-0">
-              <span class="starter-seat-num">Sur (0)</span>
-              <span class="starter-seat-player" id="preview-starter-0">Jugador 1</span>
-            </button>
-            <button type="button" class="starter-seat-btn" data-seat="1" id="starter-btn-1">
-              <span class="starter-seat-num">Este (1)</span>
-              <span class="starter-seat-player" id="preview-starter-1">Jugador 2</span>
-            </button>
-            <button type="button" class="starter-seat-btn" data-seat="2" id="starter-btn-2">
-              <span class="starter-seat-num">Norte (2)</span>
-              <span class="starter-seat-player" id="preview-starter-2">Jugador 3</span>
-            </button>
-            <button type="button" class="starter-seat-btn" data-seat="3" id="starter-btn-3">
-              <span class="starter-seat-num">Oeste (3)</span>
-              <span class="starter-seat-player" id="preview-starter-3">Jugador 4</span>
-            </button>
-          </div>
+        <div class="rule-chip">
+          <span>🔄</span>
+          <span>Salidas: <strong>Rotación Continua</strong></span>
         </div>
       </div>
 
       <!-- Botón de Inicio / Guardar -->
-      <button type="submit" class="btn btn-gold btn-save-setup" id="btn-save-setup">
-        <span>Guardar e Iniciar Partida</span>
+      <button type="submit" class="btn btn-primary btn-save-setup" id="btn-save-setup">
+        <span>Comenzar Serie</span>
       </button>
     </form>
   </div>
@@ -206,28 +170,190 @@
   .setup-form {
     display: flex;
     flex-direction: column;
-    gap: 1.25rem;
+    gap: 1.1rem;
   }
 
   .setup-section {
     display: flex;
     flex-direction: column;
     gap: 0.65rem;
-    background: rgba(0, 0, 0, 0.2);
+    background: rgba(0, 0, 0, 0.22);
     border: 1px solid var(--border-subtle);
     border-radius: var(--radius-md);
     padding: 0.85rem;
+  }
+
+  .match-mode-section {
+    background: rgba(251, 191, 36, 0.04);
+    border: 1.5px solid rgba(251, 191, 36, 0.3);
+  }
+
+  .section-title-with-badge {
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+  }
+
+  .mano-icon {
+    font-size: 1.4rem;
+    line-height: 1;
+  }
+
+  .section-required-badge {
+    font-size: 0.62rem;
+    font-weight: 800;
+    color: var(--mano-gold);
+    text-transform: uppercase;
+    letter-spacing: 0.05em;
   }
 
   .setup-section-title {
     font-size: 0.95rem;
     color: var(--mano-gold);
     letter-spacing: 0.02em;
+    line-height: 1.1;
   }
 
   .section-description {
-    font-size: 0.75rem;
+    font-size: 0.73rem;
     color: var(--text-muted);
+  }
+
+  /* Match Mode Selector — Premium Cards */
+  .match-mode-grid {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 0.65rem;
+  }
+
+  .match-mode-btn {
+    background: rgba(0, 0, 0, 0.3);
+    border: 2px solid var(--border-subtle);
+    border-radius: var(--radius-lg);
+    padding: 1rem 0.75rem 0.85rem;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 0.4rem;
+    text-align: center;
+    cursor: pointer;
+    transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
+    position: relative;
+    overflow: hidden;
+  }
+
+  .match-mode-btn::before {
+    content: '';
+    position: absolute;
+    inset: 0;
+    background: linear-gradient(135deg, transparent 0%, rgba(251, 191, 36, 0.04) 100%);
+    opacity: 0;
+    transition: opacity 0.2s ease;
+  }
+
+  .match-mode-btn:hover::before {
+    opacity: 1;
+  }
+
+  .match-mode-btn:hover {
+    border-color: rgba(251, 191, 36, 0.4);
+    transform: translateY(-1px);
+    box-shadow: 0 4px 16px rgba(0, 0, 0, 0.3);
+  }
+
+  .match-mode-btn.active {
+    border-color: var(--mano-gold);
+    background: rgba(251, 191, 36, 0.1);
+    box-shadow: 0 0 20px rgba(251, 191, 36, 0.2), 0 4px 16px rgba(0, 0, 0, 0.3);
+    transform: translateY(-1px);
+  }
+
+  .match-mode-btn.active::before {
+    opacity: 1;
+  }
+
+  /* Fila de trofeos */
+  .mode-trophy-row {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 0.2rem;
+    flex-wrap: wrap;
+    margin-bottom: 0.15rem;
+  }
+
+  .mode-trophy {
+    font-size: 1.35rem;
+    line-height: 1;
+    transition: transform 0.2s ease, filter 0.2s ease;
+  }
+
+  .mode-trophy.filled {
+    filter: drop-shadow(0 0 4px rgba(251, 191, 36, 0.5));
+  }
+
+  .mode-trophy.empty {
+    filter: grayscale(100%) opacity(0.35);
+  }
+
+  .match-mode-btn.active .mode-trophy.filled {
+    filter: drop-shadow(0 0 8px rgba(251, 191, 36, 0.75));
+    animation: trophyPulse 2s infinite;
+  }
+
+  @keyframes trophyPulse {
+    0%, 100% { transform: scale(1); }
+    50% { transform: scale(1.08); }
+  }
+
+  .mode-label {
+    font-size: 1rem;
+    font-weight: 900;
+    color: var(--text-main);
+    letter-spacing: 0.01em;
+    line-height: 1;
+  }
+
+  .match-mode-btn.active .mode-label {
+    color: var(--mano-gold);
+  }
+
+  .mode-wins-needed {
+    font-size: 0.68rem;
+    color: var(--text-muted);
+    line-height: 1.3;
+  }
+
+  .mode-wins-needed em {
+    font-style: normal;
+    font-weight: 800;
+    color: var(--text-main);
+  }
+
+  .match-mode-btn.active .mode-wins-needed em {
+    color: var(--mano-gold);
+  }
+
+  /* Pill de selección activa */
+  .mode-selected-pill {
+    font-size: 0.62rem;
+    font-weight: 800;
+    color: var(--mano-gold);
+    text-transform: uppercase;
+    letter-spacing: 0.05em;
+    background: rgba(251, 191, 36, 0.15);
+    border: 1px solid rgba(251, 191, 36, 0.4);
+    border-radius: var(--radius-full);
+    padding: 0.15rem 0.55rem;
+    opacity: 0;
+    transform: scale(0.85);
+    transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
+    margin-top: 0.1rem;
+  }
+
+  .match-mode-btn.active .mode-selected-pill {
+    opacity: 1;
+    transform: scale(1);
   }
 
   .setup-grid-2 {
@@ -251,7 +377,7 @@
     gap: 0.35rem;
   }
 
-  .text-input, .number-input {
+  .text-input {
     background: var(--bg-surface);
     border: 1.5px solid var(--border-strong);
     border-radius: var(--radius-sm);
@@ -263,7 +389,7 @@
     transition: border-color 0.15s ease;
   }
 
-  .text-input:focus, .number-input:focus {
+  .text-input:focus {
     border-color: var(--mano-gold);
   }
 
@@ -297,144 +423,55 @@
     color: #fdba74;
   }
 
-  /* Bloques de Reglas */
-  .rules-block {
-    display: flex;
-    flex-direction: column;
-    gap: 0.45rem;
-    padding-top: 0.45rem;
-    border-top: 1px solid var(--border-subtle);
-  }
-
-  .target-input-row {
+  /* Recordatorio de salidor */
+  .starter-reminder {
     display: flex;
     align-items: center;
-    gap: 0.5rem;
-  }
-
-  .target-presets {
-    display: flex;
-    gap: 0.35rem;
-    flex: 1;
-  }
-
-  .preset-btn {
-    flex: 1;
-    padding: 0.55rem 0.2rem;
-    background: var(--bg-surface);
-    border: 1px solid var(--border-subtle);
-    border-radius: var(--radius-sm);
-    color: var(--text-muted);
-    font-weight: 700;
-    font-size: 0.85rem;
-  }
-
-  .preset-btn.active {
-    background: var(--mano-gold);
-    color: #1a1500;
-    border-color: var(--mano-gold);
-  }
-
-  .number-input {
-    width: 80px;
-    text-align: center;
-    font-weight: 700;
-  }
-
-  /* Tarjetas de Radio */
-  .radio-cards-grid {
-    display: grid;
-    grid-template-columns: 1fr 1fr;
-    gap: 0.5rem;
-  }
-
-  .radio-cards-stack {
-    display: flex;
-    flex-direction: column;
-    gap: 0.5rem;
-  }
-
-  .radio-card {
-    display: flex;
-    background: var(--bg-surface);
-    border: 1.5px solid var(--border-subtle);
+    gap: 0.55rem;
+    background: rgba(251, 191, 36, 0.07);
+    border: 1px dashed rgba(251, 191, 36, 0.35);
     border-radius: var(--radius-md);
-    padding: 0.65rem;
-    cursor: pointer;
-    position: relative;
-    transition: all 0.15s ease;
+    padding: 0.65rem 0.75rem;
+    font-size: 0.78rem;
+    color: var(--text-muted);
   }
 
-  .radio-card input {
-    position: absolute;
-    opacity: 0;
-  }
-
-  .radio-card:has(input:checked) {
-    border-color: var(--mano-gold);
-    background: rgba(251, 191, 36, 0.08);
-  }
-
-  .radio-card-content {
-    display: flex;
-    flex-direction: column;
-    gap: 0.15rem;
-  }
-
-  .radio-card-icon {
+  .starter-reminder-icon {
     font-size: 1.25rem;
+    flex-shrink: 0;
+  }
+
+  .starter-reminder strong {
     color: var(--mano-gold);
   }
 
-  .radio-card-title {
-    font-size: 0.88rem;
-    color: var(--text-main);
-  }
-
-  .radio-card-desc {
-    font-size: 0.72rem;
-    color: var(--text-muted);
-  }
-
-  /* Selector de Salidor */
-  .starter-select-grid {
-    display: grid;
-    grid-template-columns: repeat(2, 1fr);
-    gap: 0.5rem;
-  }
-
-  .starter-seat-btn {
-    background: var(--bg-surface);
-    border: 1.5px solid var(--border-subtle);
-    border-radius: var(--radius-sm);
-    padding: 0.55rem 0.5rem;
+  /* Barra de Reglas Fijas */
+  .rules-fixed-info {
     display: flex;
-    flex-direction: column;
-    align-items: flex-start;
-    gap: 0.1rem;
-    text-align: left;
+    align-items: center;
+    justify-content: space-around;
+    padding: 0.5rem;
+    background: rgba(255, 255, 255, 0.03);
+    border: 1px solid var(--border-subtle);
+    border-radius: var(--radius-sm);
+    gap: 0.35rem;
   }
 
-  .starter-seat-btn.active {
-    border-color: var(--mano-gold);
-    background: rgba(251, 191, 36, 0.12);
-  }
-
-  .starter-seat-num {
+  .rule-chip {
     font-size: 0.68rem;
     color: var(--text-muted);
-    font-weight: 700;
+    display: flex;
+    align-items: center;
+    gap: 0.25rem;
   }
 
-  .starter-seat-player {
-    font-size: 0.85rem;
-    font-weight: 700;
+  .rule-chip strong {
     color: var(--text-main);
   }
 
   .btn-save-setup {
-    height: 52px;
+    height: 50px;
     font-size: 1.05rem;
-    margin-top: 0.5rem;
+    margin-top: 0.25rem;
   }
 </style>

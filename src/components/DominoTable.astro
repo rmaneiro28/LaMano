@@ -92,6 +92,22 @@
       <span class="turn-team-badge" id="banner-starter-team">Equipo A</span>
     </div>
   </div>
+
+  <!-- Banner de confirmación de salidor (aparece solo en primera mano) -->
+  <div class="confirm-starter-banner hidden" id="confirm-starter-banner">
+    <div class="confirm-starter-inner">
+      <span class="confirm-question">¿Confirmar salida?</span>
+      <strong class="confirm-player-name" id="confirm-starter-name">—</strong>
+      <div class="confirm-actions">
+        <button type="button" class="btn-confirm-starter" id="btn-confirm-starter">
+          <span>✓ Confirmar</span>
+        </button>
+        <button type="button" class="btn-cancel-starter" id="btn-cancel-starter">
+          <span>× Cancelar</span>
+        </button>
+      </div>
+    </div>
+  </div>
 </section>
 
 <style>
@@ -367,5 +383,98 @@
       font-size: 0.82rem;
       max-width: 102px;
     }
+  }
+
+  /* Estado pendiente del salidor (primer toque, esperando confirmación) */
+  :global(.seat-card.is-starter-pending) {
+    border-color: rgba(251, 191, 36, 0.8) !important;
+    background: rgba(251, 191, 36, 0.18) !important;
+    box-shadow: 0 0 16px rgba(251, 191, 36, 0.5), inset 0 0 8px rgba(251, 191, 36, 0.15) !important;
+    animation: pendingPulse 1s ease-in-out infinite !important;
+  }
+
+  @keyframes pendingPulse {
+    0%, 100% { box-shadow: 0 0 16px rgba(251, 191, 36, 0.4), inset 0 0 8px rgba(251, 191, 36, 0.1); }
+    50%       { box-shadow: 0 0 28px rgba(251, 191, 36, 0.75), inset 0 0 12px rgba(251, 191, 36, 0.25); }
+  }
+
+  /* Banner de confirmación de salidor */
+  .confirm-starter-banner {
+    width: 100%;
+    background: linear-gradient(135deg, rgba(251, 191, 36, 0.12) 0%, rgba(251, 191, 36, 0.06) 100%);
+    border: 1.5px solid rgba(251, 191, 36, 0.5);
+    border-radius: var(--radius-md);
+    padding: 0.65rem 0.85rem;
+    animation: slideDown 0.25s cubic-bezier(0.16, 1, 0.3, 1);
+  }
+
+  @keyframes slideDown {
+    from { opacity: 0; transform: translateY(-8px) scale(0.97); }
+    to   { opacity: 1; transform: translateY(0) scale(1); }
+  }
+
+  .confirm-starter-banner.hidden {
+    display: none;
+  }
+
+  .confirm-starter-inner {
+    display: flex;
+    align-items: center;
+    gap: 0.6rem;
+    flex-wrap: wrap;
+    justify-content: space-between;
+  }
+
+  .confirm-question {
+    font-size: 0.75rem;
+    color: var(--text-muted);
+    font-weight: 600;
+    white-space: nowrap;
+  }
+
+  .confirm-player-name {
+    font-size: 1rem;
+    font-weight: 900;
+    color: var(--mano-gold);
+    flex: 1;
+    text-align: center;
+  }
+
+  .confirm-actions {
+    display: flex;
+    gap: 0.4rem;
+    align-items: center;
+  }
+
+  .btn-confirm-starter {
+    background: linear-gradient(135deg, #fbbf24, #d97706);
+    color: #0b1411;
+    font-weight: 900;
+    font-size: 0.82rem;
+    padding: 0.45rem 0.85rem;
+    border-radius: var(--radius-sm);
+    letter-spacing: 0.02em;
+    transition: all 0.15s ease;
+    white-space: nowrap;
+  }
+
+  .btn-confirm-starter:active {
+    transform: scale(0.96);
+  }
+
+  .btn-cancel-starter {
+    background: rgba(255, 255, 255, 0.07);
+    color: var(--text-muted);
+    font-weight: 700;
+    font-size: 0.82rem;
+    padding: 0.45rem 0.7rem;
+    border-radius: var(--radius-sm);
+    border: 1px solid var(--border-subtle);
+    transition: all 0.15s ease;
+    white-space: nowrap;
+  }
+
+  .btn-cancel-starter:active {
+    transform: scale(0.96);
   }
 </style>

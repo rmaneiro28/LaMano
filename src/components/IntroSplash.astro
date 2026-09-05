@@ -1,0 +1,362 @@
+---
+// IntroSplash.astro - Animación y video de entrada a la aplicación Wicho Domino Club
+---
+
+<div class="intro-splash-overlay" id="intro-splash" role="dialog" aria-modal="true" aria-label="Bienvenida Wicho Domino Club">
+  <div class="intro-backdrop"></div>
+
+  <div class="intro-content">
+    <div class="intro-card">
+      <!-- Encabezado del Splash con Logo -->
+      <div class="intro-header">
+        <img src="./logo.png" alt="Wicho Domino Club" class="intro-logo-badge" />
+        <div class="intro-titles">
+          <h2 class="intro-club-name">WICHO DOMINO CLUB</h2>
+          <span class="intro-club-tagline">Mesa Oficial de Anotación</span>
+        </div>
+      </div>
+
+      <!-- Reproductor del Video de Entrada -->
+      <div class="video-wrapper">
+        <video
+          id="intro-video"
+          class="intro-video-element"
+          src="./intro.mp4"
+          playsinline
+          autoplay
+          muted
+          preload="auto"
+        ></video>
+
+        <!-- Botón para activar/desactivar audio del video de entrada -->
+        <button type="button" class="intro-audio-btn" id="btn-intro-sound" aria-label="Activar/Silenciar sonido de la animación">
+          <span id="intro-sound-symbol">🔇</span>
+          <span class="sound-label">Sonido</span>
+        </button>
+      </div>
+
+      <!-- Barra de progreso del video -->
+      <div class="video-progress-bar">
+        <div class="video-progress-fill" id="intro-video-progress"></div>
+      </div>
+
+      <!-- Botón de Entrada directa -->
+      <div class="intro-footer-actions">
+        <button type="button" class="btn-enter-table" id="btn-enter-game">
+          <span>Comenzar a Jugar</span>
+          <span class="enter-icon">🀰</span>
+        </button>
+        <span class="intro-hint-text">El video avanza automáticamente o presiona para omitir</span>
+      </div>
+    </div>
+  </div>
+</div>
+
+<style>
+  .intro-splash-overlay {
+    position: fixed;
+    inset: 0;
+    z-index: 99999;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    padding: 1rem;
+    transition: opacity 0.45s cubic-bezier(0.4, 0, 0.2, 1), transform 0.45s cubic-bezier(0.4, 0, 0.2, 1), visibility 0.45s;
+    overflow: hidden;
+  }
+
+  .intro-splash-overlay.dismissed {
+    opacity: 0;
+    pointer-events: none;
+    transform: scale(1.04);
+    visibility: hidden;
+  }
+
+  .intro-backdrop {
+    position: absolute;
+    inset: 0;
+    background: radial-gradient(circle at 50% 30%, #173629 0%, #080f0c 85%);
+    backdrop-filter: blur(12px);
+    -webkit-backdrop-filter: blur(12px);
+  }
+
+  .intro-content {
+    position: relative;
+    z-index: 2;
+    width: 100%;
+    max-width: 440px;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+  }
+
+  .intro-card {
+    width: 100%;
+    background: rgba(19, 34, 29, 0.92);
+    border: 1px solid rgba(251, 191, 36, 0.3);
+    border-radius: var(--radius-lg);
+    box-shadow: 0 16px 40px rgba(0, 0, 0, 0.7), 0 0 30px rgba(251, 191, 36, 0.2);
+    padding: 1.15rem 1rem 1rem;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 0.85rem;
+    animation: cardEntry 0.5s cubic-bezier(0.16, 1, 0.3, 1);
+  }
+
+  @keyframes cardEntry {
+    from {
+      opacity: 0;
+      transform: translateY(24px) scale(0.96);
+    }
+    to {
+      opacity: 1;
+      transform: translateY(0) scale(1);
+    }
+  }
+
+  .intro-header {
+    display: flex;
+    align-items: center;
+    gap: 0.75rem;
+    width: 100%;
+  }
+
+  .intro-logo-badge {
+    width: 52px;
+    height: 52px;
+    border-radius: 50%;
+    object-fit: cover;
+    border: 2px solid var(--mano-gold);
+    box-shadow: 0 0 12px var(--mano-glow);
+    background: #0d1a16;
+  }
+
+  .intro-titles {
+    display: flex;
+    flex-direction: column;
+  }
+
+  .intro-club-name {
+    font-size: 1.15rem;
+    font-weight: 900;
+    color: var(--mano-gold);
+    letter-spacing: 0.04em;
+    line-height: 1.1;
+    text-shadow: 0 0 10px rgba(251, 191, 36, 0.4);
+  }
+
+  .intro-club-tagline {
+    font-size: 0.75rem;
+    color: var(--text-muted);
+    font-weight: 600;
+  }
+
+  /* Video */
+  .video-wrapper {
+    position: relative;
+    width: 100%;
+    border-radius: var(--radius-md);
+    overflow: hidden;
+    background: #000;
+    border: 1px solid var(--border-strong);
+    box-shadow: 0 6px 18px rgba(0, 0, 0, 0.5);
+    aspect-ratio: 9 / 16;
+    max-height: 52vh;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+  }
+
+  .intro-video-element {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+    display: block;
+    cursor: pointer;
+  }
+
+  .intro-audio-btn {
+    position: absolute;
+    top: 0.65rem;
+    right: 0.65rem;
+    background: rgba(0, 0, 0, 0.65);
+    backdrop-filter: blur(6px);
+    -webkit-backdrop-filter: blur(6px);
+    border: 1px solid rgba(255, 255, 255, 0.2);
+    color: #fff;
+    border-radius: var(--radius-full);
+    padding: 0.35rem 0.65rem;
+    font-size: 0.75rem;
+    font-weight: 700;
+    display: inline-flex;
+    align-items: center;
+    gap: 0.35rem;
+    transition: background-color 0.15s ease, transform 0.1s ease;
+    z-index: 5;
+  }
+
+  .intro-audio-btn:hover {
+    background: rgba(0, 0, 0, 0.85);
+  }
+
+  .video-progress-bar {
+    width: 100%;
+    height: 3px;
+    background: rgba(255, 255, 255, 0.1);
+    border-radius: var(--radius-full);
+    overflow: hidden;
+  }
+
+  .video-progress-fill {
+    height: 100%;
+    width: 0%;
+    background: linear-gradient(90deg, var(--team-a-base), var(--mano-gold));
+    transition: width 0.15s linear;
+  }
+
+  .intro-footer-actions {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 0.4rem;
+    width: 100%;
+  }
+
+  .btn-enter-table {
+    width: 100%;
+    padding: 0.85rem 1.2rem;
+    background: linear-gradient(135deg, #fbbf24 0%, #d97706 100%);
+    color: #0b1411;
+    font-weight: 800;
+    font-size: 1.05rem;
+    border-radius: var(--radius-md);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 0.6rem;
+    box-shadow: 0 4px 16px rgba(251, 191, 36, 0.4);
+    letter-spacing: 0.02em;
+    transition: all 0.15s ease;
+  }
+
+  .btn-enter-table:active {
+    transform: scale(0.98);
+    box-shadow: 0 2px 8px rgba(251, 191, 36, 0.3);
+  }
+
+  .enter-icon {
+    font-size: 1.25rem;
+    line-height: 1;
+  }
+
+  .intro-hint-text {
+    font-size: 0.68rem;
+    color: var(--text-subtle);
+    text-align: center;
+  }
+
+  @media (max-height: 680px) {
+    .video-wrapper {
+      max-height: 42vh;
+    }
+    .intro-card {
+      padding: 0.85rem;
+      gap: 0.65rem;
+    }
+  }
+</style>
+
+<script>
+  const INTRO_SEEN_KEY = 'lamano_intro_seen';
+
+  const splash = document.getElementById('intro-splash');
+  const video = document.getElementById('intro-video') as HTMLVideoElement | null;
+  const btnEnter = document.getElementById('btn-enter-game');
+  const btnAudio = document.getElementById('btn-intro-sound');
+  const soundSymbol = document.getElementById('intro-sound-symbol');
+  const progressFill = document.getElementById('intro-video-progress');
+
+  let isDismissed = false;
+
+  function dismissIntro(markAsSeen = true): void {
+    if (isDismissed || !splash) return;
+    isDismissed = true;
+    splash.classList.add('dismissed');
+
+    // Marcar en localStorage que ya se vio el intro
+    if (markAsSeen) {
+      try {
+        localStorage.setItem(INTRO_SEEN_KEY, '1');
+      } catch (_) {}
+    }
+
+    // Pausar video y liberar recursos tras desvanecer
+    setTimeout(() => {
+      if (video) {
+        video.pause();
+      }
+      splash.style.display = 'none';
+    }, 450);
+  }
+
+  // Verificar si ya se vio la intro (saltar inmediatamente sin animación)
+  try {
+    const alreadySeen = localStorage.getItem(INTRO_SEEN_KEY) === '1';
+    // Permitir forzar la intro con ?intro=1 en la URL (para replay desde header)
+    const forceIntro = new URLSearchParams(window.location.search).get('intro') === '1';
+
+    if (alreadySeen && !forceIntro) {
+      // Ocultar sin animación
+      if (splash) {
+        splash.style.display = 'none';
+        isDismissed = true;
+      }
+    } else {
+      // Primera vez o replay forzado: reproducir video
+      if (video) {
+        video.addEventListener('timeupdate', () => {
+          if (video.duration && progressFill) {
+            const pct = (video.currentTime / video.duration) * 100;
+            progressFill.style.width = `${pct}%`;
+          }
+        });
+
+        video.addEventListener('ended', () => {
+          dismissIntro();
+        });
+
+        video.addEventListener('click', () => {
+          dismissIntro();
+        });
+
+        video.play().catch((err) => {
+          console.log('Autoplay con restricciones de navegador:', err);
+        });
+      }
+
+      if (btnEnter) {
+        btnEnter.addEventListener('click', () => {
+          dismissIntro();
+        });
+      }
+
+      if (btnAudio && video) {
+        btnAudio.addEventListener('click', (e) => {
+          e.stopPropagation();
+          video.muted = !video.muted;
+          if (soundSymbol) {
+            soundSymbol.textContent = video.muted ? '🔇' : '🔊';
+          }
+        });
+      }
+    }
+  } catch (_) {
+    // Si falla localStorage, mostrar el intro normalmente
+  }
+
+  // Replay desde el header (navega a ?intro=1)
+  window.addEventListener('lamano:replay-intro', () => {
+    window.location.href = '/?intro=1';
+  });
+</script>

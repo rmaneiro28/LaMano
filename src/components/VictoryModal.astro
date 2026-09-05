@@ -1,5 +1,5 @@
 ---
-// VictoryModal.astro - Modal de fin de partida, celebración con confetti y estadísticas completas
+// VictoryModal.astro - Modal de fin de partida con marcador de serie y confetti
 ---
 
 <div class="modal-overlay" id="victory-modal" role="dialog" aria-modal="true" aria-labelledby="modal-title-victory">
@@ -7,12 +7,35 @@
     <canvas id="confetti-canvas" class="confetti-canvas"></canvas>
 
     <div class="victory-header">
-      <div class="trophy-badge float-mano">🏆</div>
+      <div class="trophy-badge float-mano" id="victory-trophy-icon">🏆</div>
       <h2 id="modal-title-victory" class="victory-title">¡Partida Finalizada!</h2>
       <p class="victory-winner-team" id="victory-winner-name">Equipo Campeón</p>
     </div>
 
-    <!-- Marcador Final -->
+    <!-- Marcador de la Serie -->
+    <div class="series-scoreboard" id="series-scoreboard">
+      <div class="series-header">
+        <span class="series-label" id="series-mode-label">Mejor de 3</span>
+        <span class="series-game-tag" id="series-game-tag">Partida 1</span>
+      </div>
+      <div class="series-teams-row">
+        <div class="series-team series-team-a">
+          <span class="series-team-name" id="series-team-a-name">Nosotros</span>
+          <div class="series-pips" id="series-pips-a">
+            <!-- Puntos de la serie se renderizan por JS -->
+          </div>
+          <span class="series-wins-count" id="series-wins-a">0</span>
+        </div>
+        <span class="series-dash">—</span>
+        <div class="series-team series-team-b">
+          <span class="series-wins-count" id="series-wins-b">0</span>
+          <div class="series-pips" id="series-pips-b"></div>
+          <span class="series-team-name" id="series-team-b-name">Ellos</span>
+        </div>
+      </div>
+    </div>
+
+    <!-- Marcador Final de la Partida -->
     <div class="final-score-banner">
       <div class="final-team">
         <span class="final-team-label" id="final-team-a-name">Nosotros</span>
@@ -59,14 +82,21 @@
 
     <!-- Acciones Finales -->
     <div class="victory-actions">
-      <button type="button" class="btn btn-gold btn-rematch" id="btn-rematch">
+      <!-- Botón "Siguiente partida" (visible cuando la serie no ha terminado) -->
+      <button type="button" class="btn btn-gold btn-next-game" id="btn-next-game" style="display:none;">
+        <span class="btn-icon-symbol">▶</span>
+        <span id="btn-next-game-label">Siguiente Partida →</span>
+      </button>
+
+      <!-- Botón "Revancha / Nueva serie" (visible cuando la serie terminó) -->
+      <button type="button" class="btn btn-gold btn-rematch" id="btn-rematch" style="display:none;">
         <span class="btn-icon-symbol">🔄</span>
-        <span>Revancha (Mismos Jugadores)</span>
+        <span>Nueva Serie (Mismos Jugadores)</span>
       </button>
 
       <button type="button" class="btn btn-secondary btn-new-game" id="btn-new-game-from-victory">
         <span class="btn-icon-symbol">⚙️</span>
-        <span>Configurar Nueva Partida</span>
+        <span>Configurar Nueva Serie</span>
       </button>
     </div>
   </div>
@@ -75,20 +105,21 @@
 <style>
   .victory-sheet {
     position: relative;
-    overflow: hidden;
+    overflow-y: auto;
     text-align: center;
     max-height: 92vh;
     padding-top: 2rem;
+    gap: 0.75rem;
   }
 
   .confetti-canvas {
-    position: absolute;
+    position: fixed;
     top: 0;
     left: 0;
     width: 100%;
     height: 100%;
     pointer-events: none;
-    z-index: 10;
+    z-index: 99998;
   }
 
   .victory-header {
@@ -96,6 +127,7 @@
     flex-direction: column;
     align-items: center;
     gap: 0.35rem;
+    position: relative;
     z-index: 2;
   }
 
@@ -118,6 +150,112 @@
     text-shadow: 0 0 12px var(--mano-glow);
   }
 
+  /* Marcador de Serie */
+  .series-scoreboard {
+    background: rgba(0, 0, 0, 0.4);
+    border: 1.5px solid rgba(251, 191, 36, 0.35);
+    border-radius: var(--radius-lg);
+    padding: 0.75rem 1rem;
+    display: flex;
+    flex-direction: column;
+    gap: 0.55rem;
+    z-index: 2;
+  }
+
+  .series-header {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+  }
+
+  .series-label {
+    font-size: 0.72rem;
+    font-weight: 800;
+    color: var(--mano-gold);
+    text-transform: uppercase;
+    letter-spacing: 0.06em;
+  }
+
+  .series-game-tag {
+    font-size: 0.72rem;
+    color: var(--text-muted);
+    font-weight: 600;
+  }
+
+  .series-teams-row {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 0.5rem;
+  }
+
+  .series-team {
+    display: flex;
+    align-items: center;
+    gap: 0.45rem;
+    flex: 1;
+  }
+
+  .series-team-a {
+    justify-content: flex-start;
+  }
+
+  .series-team-b {
+    justify-content: flex-end;
+  }
+
+  .series-team-name {
+    font-size: 0.82rem;
+    font-weight: 700;
+    color: var(--text-muted);
+    text-transform: uppercase;
+  }
+
+  .series-pips {
+    display: flex;
+    gap: 0.2rem;
+    align-items: center;
+  }
+
+  /* Los pips se generan por JS */
+  :global(.series-pip) {
+    width: 14px;
+    height: 14px;
+    border-radius: 50%;
+    border: 1.5px solid rgba(255,255,255,0.2);
+    display: inline-block;
+    transition: background 0.2s ease;
+  }
+
+  :global(.series-pip.won-a) {
+    background: var(--team-a-base);
+    border-color: var(--team-a-base);
+    box-shadow: 0 0 6px rgba(59,130,246,0.5);
+  }
+
+  :global(.series-pip.won-b) {
+    background: var(--team-b-base, #f97316);
+    border-color: var(--team-b-base, #f97316);
+    box-shadow: 0 0 6px rgba(249,115,22,0.5);
+  }
+
+  .series-wins-count {
+    font-family: var(--font-display);
+    font-size: 2rem;
+    font-weight: 900;
+    color: var(--text-main);
+    line-height: 1;
+    min-width: 1.5rem;
+    text-align: center;
+  }
+
+  .series-dash {
+    font-size: 1.4rem;
+    color: var(--text-subtle);
+    font-weight: 800;
+    flex-shrink: 0;
+  }
+
   /* Marcador Final */
   .final-score-banner {
     display: flex;
@@ -126,8 +264,7 @@
     background: rgba(0, 0, 0, 0.35);
     border: 1.5px solid var(--border-strong);
     border-radius: var(--radius-lg);
-    padding: 0.85rem 1rem;
-    margin: 0.35rem 0;
+    padding: 0.75rem 1rem;
     z-index: 2;
   }
 
@@ -209,12 +346,26 @@
     flex-direction: column;
     gap: 0.65rem;
     margin-top: 0.25rem;
+    position: relative;
     z-index: 2;
+  }
+
+  .btn-next-game {
+    height: 54px;
+    font-size: 1.1rem;
+    font-weight: 800;
+    border-radius: var(--radius-md);
+    animation: pulse-gold 2s infinite;
+  }
+
+  @keyframes pulse-gold {
+    0%, 100% { box-shadow: 0 4px 16px rgba(251, 191, 36, 0.4); }
+    50% { box-shadow: 0 4px 28px rgba(251, 191, 36, 0.7); }
   }
 
   .btn-rematch {
     height: 54px;
-    font-size: 1.1rem;
+    font-size: 1.05rem;
     font-weight: 800;
     border-radius: var(--radius-md);
   }

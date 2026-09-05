@@ -3,11 +3,14 @@ import {
   recordHand,
   undoLastHand,
   rematchGame,
-  setupNewGame,
+  setupNewMatch,
+  startNextGame,
+  setHandStarter,
   STATE_CHANGE_EVENT,
   getTeamBySeat,
+  getWinsNeeded,
 } from './game-store';
-import type { GameState, SeatIndex, TeamId, HandWinType, TurnDirection, ExitRule } from './types';
+import type { GameState, MatchMode, SeatIndex, TeamId, HandWinType } from './types';
 import {
   initSoundSettings,
   toggleMute,
@@ -24,8 +27,9 @@ let closeHandWinType: HandWinType = 'normal';
 let closeHandWinnerSeat: SeatIndex | undefined = undefined;
 let closeHandWinnerTeam: TeamId | undefined = undefined;
 let closeHandPoints = 0;
-let setupFirstStarterSeat: SeatIndex = 0;
+let setupMatchMode: MatchMode = 'bo3';
 let isWakeLockActive = false;
+let pendingStarterSeat: SeatIndex | null = null; // Primer toque: asiento seleccionado pero sin confirmar
 
 // Canvas de Confetti
 let confettiAnimationId: number | null = null;
@@ -50,6 +54,7 @@ export function initApp(): void {
   setupHistoryDrawerListeners();
   setupSetupModalListeners();
   setupVictoryModalListeners();
+  setupStarterConfirmListeners();
 
   // Render inicial
   const initialState = loadGameState();
@@ -144,6 +149,8 @@ function renderScoreBoard(state: GameState): void {
   const targetDiffB = document.getElementById('target-diff-team-b');
   const roundDisplay = document.getElementById('display-current-round');
   const targetNumber = document.getElementById('display-target-number');
+  const rowsContainer = document.getElementById('scoresheet-rows');
+  const scrollArea = document.getElementById('scoresheet-scroll-area');
 
   if (nameA) nameA.textContent = state.teams.teamA.name;
   if (nameB) nameB.textContent = state.teams.teamB.name;
@@ -164,9 +171,104 @@ function renderScoreBoard(state: GameState): void {
 
   if (targetDiffA) targetDiffA.textContent = remainingA === 0 ? '¡Meta lograda!' : `Faltan ${remainingA}`;
   if (targetDiffB) targetDiffB.textContent = remainingB === 0 ? '¡Meta lograda!' : `Faltan ${remainingB}`;
+
+  // Render de las partidas en dos columnas (Anotación Manual)
+  if (rowsContainer) {
+    if (state.history.length === 0) {
+      rowsContainer.innerHTML = `
+        <div class="scoresheet-empty-state" id="scoresheet-empty-state">
+          <div class="empty-row-guide">
+            <span class="empty-cell">—</span>
+            <span class="empty-divider"></span>
+            <span class="empty-cell">—</span>
+          </div>
+          <p class="empty-note">Anotación manual lista. Cierra la 1ª mano para registrar los puntos.</p>
+        </div>
+      `;
+    } else {
+      const rowsHtml = state.history
+        .map((item, index) => {
+          const isLatest = index === state.history.length - 1;
+          const isTeamA = item.winningTeam === 'teamA';
+          const trancaIcon = item.winType === 'tranca' ? '<span title="Victoria por tranca" style="font-size:0.75rem;margin:0 2px;">🔒</span>' : '';
+
+          const cellA = isTeamA
+            ? `<div class="score-value-tag">
+                 <span class="score-points-a">+${item.points}</span>
+                 <span class="score-sub-accum">(${item.scoreTeamAAfter})</span>
+                 ${trancaIcon}
+               </div>`
+            : '<span class="score-dash">—</span>';
+
+          const cellB = !isTeamA
+            ? `<div class="score-value-tag">
+                 ${trancaIcon}
+                 <span class="score-sub-accum">(${item.scoreTeamBAfter})</span>
+                 <span class="score-points-b">+${item.points}</span>
+               </div>`
+            : '<span class="score-dash">—</span>';
+
+          return `
+            <div class="scoresheet-row ${isLatest ? 'latest-round' : ''}">
+              <div class="score-cell cell-team-a">${cellA}</div>
+              <span class="row-round-badge">M${item.round}</span>
+              <div class="score-cell cell-team-b">${cellB}</div>
+            </div>
+          `;
+        })
+        .join('');
+
+      rowsContainer.innerHTML = rowsHtml;
+
+      // Auto-scroll al final para mantener siempre visible la última mano anotada
+      if (scrollArea) {
+        requestAnimationFrame(() => {
+          scrollArea.scrollTop = scrollArea.scrollHeight;
+        });
+      }
+    }
+  }
+
+  // Render indicadores de serie en el scoreboard
+  renderSeriesIndicator(state);
+}
+
+/** Renderiza los indicadores de partidas ganadas en la serie (pips) */
+function renderSeriesIndicator(state: GameState): void {
+  const indicatorA = document.getElementById('series-indicator-a');
+  const indicatorB = document.getElementById('series-indicator-b');
+  const seriesTag = document.getElementById('series-mode-tag');
+  const numA = document.getElementById('series-score-num-a');
+  const numB = document.getElementById('series-score-num-b');
+
+  const winsNeeded = getWinsNeeded(state.matchMode);
+  const modeLabel = state.matchMode === 'bo3' ? 'Bo3' : 'Bo5';
+
+  if (seriesTag) {
+    seriesTag.textContent = `${modeLabel} · P${state.gameNumber}`;
+  }
+
+  if (numA) numA.textContent = String(state.gamesWonTeamA);
+  if (numB) numB.textContent = String(state.gamesWonTeamB);
+
+  function buildPips(won: number, total: number, teamClass: string): string {
+    let html = '';
+    for (let i = 0; i < winsNeeded; i++) {
+      html += `<span class="series-pip-mini ${i < won ? teamClass : ''}"></span>`;
+    }
+    return html;
+  }
+
+  if (indicatorA) indicatorA.innerHTML = buildPips(state.gamesWonTeamA, winsNeeded, 'won-a');
+  if (indicatorB) indicatorB.innerHTML = buildPips(state.gamesWonTeamB, winsNeeded, 'won-b');
 }
 
 function renderDominoTable(state: GameState): void {
+  // Si el salidor ya fue confirmado, ocultar banner de confirmación pendiente
+  if (state.starterConfirmed) {
+    hideStarterConfirmBanner();
+  }
+
   // Render de cada jugador en su asiento
   state.players.forEach((player) => {
     const nameEl = document.getElementById(`seat-player-name-${player.seat}`);
@@ -180,11 +282,39 @@ function renderDominoTable(state: GameState): void {
     }
 
     const isStarter = state.currentHandStarterSeat === player.seat;
+    const isPending = !state.starterConfirmed && pendingStarterSeat === player.seat;
+
     if (cardEl) {
-      if (isStarter) {
-        cardEl.classList.add('is-hand-starter');
+      if (!state.starterConfirmed) {
+        // Solo en la primera mano: primer toque activa estado pendiente
+        cardEl.style.cursor = 'pointer';
+        cardEl.title = `Toca para seleccionar a ${player.name} como salidor`;
+        cardEl.onclick = () => {
+          playTap();
+          // Si ya hay un pendiente diferente, limpiar su clase
+          if (pendingStarterSeat !== null && pendingStarterSeat !== player.seat) {
+            const prevCard = document.getElementById(`seat-card-${pendingStarterSeat}`);
+            prevCard?.classList.remove('is-starter-pending');
+          }
+          pendingStarterSeat = player.seat;
+          showStarterConfirmBanner(state, player.seat);
+        };
       } else {
+        // Ya confirmado: deshabilitar toque — la rotación es automática
+        cardEl.style.cursor = 'default';
+        cardEl.title = '';
+        cardEl.onclick = null;
+      }
+
+      // Clase visual: pendiente (amarillo pulsante) o confirmado (azul)
+      if (isPending) {
+        cardEl.classList.add('is-starter-pending');
         cardEl.classList.remove('is-hand-starter');
+      } else if (isStarter && state.starterConfirmed) {
+        cardEl.classList.add('is-hand-starter');
+        cardEl.classList.remove('is-starter-pending');
+      } else {
+        cardEl.classList.remove('is-hand-starter', 'is-starter-pending');
       }
     }
 
@@ -202,29 +332,20 @@ function renderDominoTable(state: GameState): void {
     }
   });
 
-  // Centro de mesa: sentido y criterio
+  // Centro de mesa: siempre antihorario y rotación continua
   const rotationSymbol = document.getElementById('rotation-symbol');
   const rotationText = document.getElementById('rotation-text');
   const exitRuleBadge = document.getElementById('exit-rule-badge');
 
-  if (rotationSymbol && rotationText) {
-    if (state.settings.direction === 'counter-clockwise') {
-      rotationSymbol.textContent = '↺';
-      rotationText.textContent = 'Antihorario';
-    } else {
-      rotationSymbol.textContent = '↻';
-      rotationText.textContent = 'Horario';
-    }
-  }
-
-  if (exitRuleBadge) {
-    exitRuleBadge.textContent = state.settings.exitRule === 'rotation' ? 'Rotación' : 'Por Dominada';
-  }
+  if (rotationSymbol) rotationSymbol.textContent = '↺';
+  if (rotationText) rotationText.textContent = 'Antihorario';
+  if (exitRuleBadge) exitRuleBadge.textContent = 'Rotación Continua';
 
   // Banner contextual de salida
   const starterPlayer = state.players[state.currentHandStarterSeat];
   const starterName = document.getElementById('banner-starter-name');
   const starterTeam = document.getElementById('banner-starter-team');
+  const captionEl = document.querySelector('.turn-caption');
 
   if (starterName && starterPlayer) {
     starterName.textContent = starterPlayer.name;
@@ -232,6 +353,14 @@ function renderDominoTable(state: GameState): void {
   if (starterTeam && starterPlayer) {
     starterTeam.textContent = starterPlayer.team === 'teamA' ? state.teams.teamA.name : state.teams.teamB.name;
     starterTeam.className = `turn-team-badge ${starterPlayer.team === 'teamA' ? 'badge-team-a' : 'badge-team-b'}`;
+  }
+
+  if (captionEl) {
+    if (!state.starterConfirmed) {
+      captionEl.textContent = '✋ Toca al jugador para asignar la salida:';
+    } else {
+      captionEl.textContent = 'Tiene la salida:';
+    }
   }
 }
 
@@ -244,7 +373,12 @@ function renderRoundControls(state: GameState): void {
     btnUndo.disabled = state.history.length === 0;
   }
   if (btnCloseHand) {
-    btnCloseHand.disabled = state.isFinished;
+    btnCloseHand.disabled = state.isFinished || !state.starterConfirmed;
+    if (!state.starterConfirmed) {
+      btnCloseHand.title = 'Primero toca al jugador en la mesa para asignar la salida';
+    } else {
+      btnCloseHand.title = '';
+    }
   }
   if (historyBadge) {
     historyBadge.textContent = String(state.history.length);
@@ -284,6 +418,7 @@ function setupRoundControlsListeners(): void {
 function openCloseHandModal(): void {
   const state = loadGameState();
   if (state.isFinished) return;
+  if (!state.starterConfirmed) return; // No abrir si no se ha confirmado el salidor
 
   // Reset de valores locales
   closeHandWinType = 'normal';
@@ -291,13 +426,19 @@ function openCloseHandModal(): void {
   closeHandWinnerTeam = undefined;
   closeHandPoints = 0;
 
-  // Actualizar títulos e info
+  // Actualizar título
   const subtitleRound = document.getElementById('modal-subtitle-round');
   if (subtitleRound) {
-    subtitleRound.textContent = `Ronda ${state.currentRound} • Salidor: ${state.players[state.currentHandStarterSeat].name}`;
+    subtitleRound.textContent = `Partida ${state.gameNumber} · Ronda ${state.currentRound} · Meta 100 pts`;
   }
 
-  // Actualizar nombres de jugadores en el selector
+  // Mostrar nombre del salidor actual
+  const starterNameEl = document.getElementById('modal-current-starter-name');
+  if (starterNameEl) {
+    starterNameEl.textContent = state.players[state.currentHandStarterSeat]?.name || '—';
+  }
+
+  // Actualizar nombres de jugadores en el selector de ganador
   state.players.forEach((p) => {
     const nameEl = document.getElementById(`select-name-${p.seat}`);
     if (nameEl) nameEl.textContent = p.name;
@@ -362,7 +503,7 @@ function setupCloseHandModalListeners(): void {
         closeHandWinnerTeam = getTeamBySeat(s as SeatIndex);
 
         // Actualizar visual de selección
-        document.querySelectorAll('.player-select-btn').forEach((b) => b.classList.remove('selected'));
+        document.querySelectorAll('#section-winner-player .player-select-btn').forEach((b) => b.classList.remove('selected'));
         btnSeat.classList.add('selected');
         updateCloseHandPreview();
       });
@@ -469,7 +610,8 @@ function setupCloseHandModalListeners(): void {
         closeHandWinType,
         closeHandPoints,
         closeHandWinnerSeat,
-        closeHandWinnerTeam
+        closeHandWinnerTeam,
+        undefined // El salidor ya está en el estado, no se pasa desde el modal
       );
 
       closeCloseHandModal();
@@ -514,6 +656,7 @@ function updateCloseHandPreview(): void {
   if (!previewText) return;
 
   const state = loadGameState();
+  const starterName = state.players[state.currentHandStarterSeat]?.name || '?';
 
   if (closeHandWinType === 'normal' && closeHandWinnerSeat !== undefined) {
     const player = state.players[closeHandWinnerSeat];
@@ -521,15 +664,15 @@ function updateCloseHandPreview(): void {
     const currentScore = player.team === 'teamA' ? state.scoreTeamA : state.scoreTeamB;
     const newScore = currentScore + closeHandPoints;
 
-    previewText.innerHTML = `<strong>${player.name}</strong> sumará <strong>+${closeHandPoints} pts</strong> a ${team.name} (Total: ${newScore}/${state.settings.targetScore})`;
+    previewText.innerHTML = `Salió <strong>${starterName}</strong>. <strong>${player.name}</strong> sumará <strong>+${closeHandPoints} pts</strong> a ${team.name} (Total: ${newScore}/100)`;
   } else if (closeHandWinType === 'tranca' && closeHandWinnerTeam) {
     const team = closeHandWinnerTeam === 'teamA' ? state.teams.teamA : state.teams.teamB;
     const currentScore = closeHandWinnerTeam === 'teamA' ? state.scoreTeamA : state.scoreTeamB;
     const newScore = currentScore + closeHandPoints;
 
-    previewText.innerHTML = `Tranca ganada por <strong>${team.name}</strong> con <strong>+${closeHandPoints} pts</strong> (Total: ${newScore}/${state.settings.targetScore})`;
+    previewText.innerHTML = `Salió <strong>${starterName}</strong>. Tranca ganada por <strong>${team.name}</strong> con <strong>+${closeHandPoints} pts</strong> (Total: ${newScore}/100)`;
   } else {
-    previewText.textContent = 'Selecciona quién ganó y anota los puntos de la mano.';
+    previewText.innerHTML = `Salió <strong>${starterName}</strong>. Selecciona quién ganó y anota los puntos.`;
   }
 }
 
@@ -625,50 +768,35 @@ function setupSetupModalListeners(): void {
     });
   }
 
-  // Presets de meta de puntos
-  document.querySelectorAll('.preset-btn[data-target]').forEach((btn) => {
-    btn.addEventListener('click', () => {
-      playTap();
-      document.querySelectorAll('.preset-btn').forEach((b) => b.classList.remove('active'));
-      btn.classList.add('active');
+  // Selector de modalidad Bo3 / Bo5
+  const btnBo3 = document.getElementById('mode-btn-bo3');
+  const btnBo5 = document.getElementById('mode-btn-bo5');
 
-      const targetVal = (btn as HTMLElement).dataset.target;
-      const targetInput = document.getElementById('setup-target-score') as HTMLInputElement | null;
-      if (targetInput && targetVal) {
-        targetInput.value = targetVal;
+  if (btnBo3) {
+    btnBo3.addEventListener('click', () => {
+      playTap();
+      setupMatchMode = 'bo3';
+      btnBo3.classList.add('active');
+      btnBo3.setAttribute('aria-pressed', 'true');
+      if (btnBo5) {
+        btnBo5.classList.remove('active');
+        btnBo5.setAttribute('aria-pressed', 'false');
       }
     });
-  });
-
-  // Selector de salidor Ronda 1
-  for (let s = 0; s < 4; s++) {
-    const starterBtn = document.getElementById(`starter-btn-${s}`);
-    if (starterBtn) {
-      starterBtn.addEventListener('click', () => {
-        playTap();
-        setupFirstStarterSeat = s as SeatIndex;
-        document.querySelectorAll('.starter-seat-btn').forEach((b) => b.classList.remove('active'));
-        starterBtn.classList.add('active');
-      });
-    }
   }
 
-  // Sincronizar nombres con preview de salidor
-  const playerInputs = [
-    document.getElementById('setup-player-0') as HTMLInputElement | null,
-    document.getElementById('setup-player-1') as HTMLInputElement | null,
-    document.getElementById('setup-player-2') as HTMLInputElement | null,
-    document.getElementById('setup-player-3') as HTMLInputElement | null,
-  ];
-
-  playerInputs.forEach((inp, idx) => {
-    if (inp) {
-      inp.addEventListener('input', () => {
-        const preview = document.getElementById(`preview-starter-${idx}`);
-        if (preview) preview.textContent = inp.value || `Jugador ${idx + 1}`;
-      });
-    }
-  });
+  if (btnBo5) {
+    btnBo5.addEventListener('click', () => {
+      playTap();
+      setupMatchMode = 'bo5';
+      btnBo5.classList.add('active');
+      btnBo5.setAttribute('aria-pressed', 'true');
+      if (btnBo3) {
+        btnBo3.classList.remove('active');
+        btnBo3.setAttribute('aria-pressed', 'false');
+      }
+    });
+  }
 
   // Guardar setup
   if (form) {
@@ -684,24 +812,11 @@ function setupSetupModalListeners(): void {
       const p2 = (document.getElementById('setup-player-2') as HTMLInputElement).value.trim() || 'Jugador 3';
       const p3 = (document.getElementById('setup-player-3') as HTMLInputElement).value.trim() || 'Jugador 4';
 
-      const targetScore = parseInt((document.getElementById('setup-target-score') as HTMLInputElement).value, 10) || 100;
-
-      const directionRadio = document.querySelector('input[name="setup-direction"]:checked') as HTMLInputElement | null;
-      const direction = (directionRadio?.value as TurnDirection) || 'counter-clockwise';
-
-      const exitRuleRadio = document.querySelector('input[name="setup-exit-rule"]:checked') as HTMLInputElement | null;
-      const exitRule = (exitRuleRadio?.value as ExitRule) || 'rotation';
-
-      setupNewGame(
+      setupNewMatch(
         teamAName,
         teamBName,
         [p0, p1, p2, p3],
-        {
-          targetScore,
-          direction,
-          exitRule,
-          firstHandStarterSeat: setupFirstStarterSeat,
-        }
+        setupMatchMode
       );
 
       closeSetupModal();
@@ -719,27 +834,14 @@ function openSetupModal(): void {
 
   state.players.forEach((p) => {
     const pInput = document.getElementById(`setup-player-${p.seat}`) as HTMLInputElement | null;
-    const preview = document.getElementById(`preview-starter-${p.seat}`);
     if (pInput) pInput.value = p.name;
-    if (preview) preview.textContent = p.name;
   });
 
-  const inputTarget = document.getElementById('setup-target-score') as HTMLInputElement | null;
-  if (inputTarget) inputTarget.value = String(state.settings.targetScore);
-
-  // Marcar radio direction
-  const dirRadio = document.querySelector(`input[name="setup-direction"][value="${state.settings.direction}"]`) as HTMLInputElement | null;
-  if (dirRadio) dirRadio.checked = true;
-
-  // Marcar radio exitRule
-  const ruleRadio = document.querySelector(`input[name="setup-exit-rule"][value="${state.settings.exitRule}"]`) as HTMLInputElement | null;
-  if (ruleRadio) ruleRadio.checked = true;
-
-  // Salidor
-  setupFirstStarterSeat = state.settings.firstHandStarterSeat;
-  document.querySelectorAll('.starter-seat-btn').forEach((b) => b.classList.remove('active'));
-  const activeStarterBtn = document.getElementById(`starter-btn-${setupFirstStarterSeat}`);
-  if (activeStarterBtn) activeStarterBtn.classList.add('active');
+  // Modalidad actual
+  setupMatchMode = state.matchMode || 'bo3';
+  document.querySelectorAll('.match-mode-btn').forEach((b) => b.classList.remove('active'));
+  const activeBtn = document.getElementById(`mode-btn-${setupMatchMode}`);
+  if (activeBtn) activeBtn.classList.add('active');
 
   const modal = document.getElementById('setup-modal');
   if (modal) modal.classList.add('active');
@@ -752,8 +854,18 @@ function closeSetupModal(): void {
 
 // ================= VICTORY MODAL & CONFETTI ================= //
 function setupVictoryModalListeners(): void {
+  const btnNextGame = document.getElementById('btn-next-game');
   const btnRematch = document.getElementById('btn-rematch');
   const btnNewGame = document.getElementById('btn-new-game-from-victory');
+
+  if (btnNextGame) {
+    btnNextGame.addEventListener('click', () => {
+      playTap();
+      stopConfetti();
+      startNextGame();
+      closeVictoryModal();
+    });
+  }
 
   if (btnRematch) {
     btnRematch.addEventListener('click', () => {
@@ -777,14 +889,66 @@ function setupVictoryModalListeners(): void {
 function showVictoryModal(state: GameState): void {
   playVictory();
 
+  const winsNeeded = getWinsNeeded(state.matchMode);
+  const isSeriesOver = (state.gamesWonTeamA >= winsNeeded || state.gamesWonTeamB >= winsNeeded);
+  const seriesWinner = isSeriesOver
+    ? (state.gamesWonTeamA >= winsNeeded ? state.teams.teamA : state.teams.teamB)
+    : null;
+
   const winnerTeam = state.winnerTeam === 'teamA' ? state.teams.teamA : state.teams.teamB;
+
+  // Título y mensaje según contexto
+  const titleEl = document.getElementById('modal-title-victory');
+  const trophyEl = document.getElementById('victory-trophy-icon');
   const winnerNameEl = document.getElementById('victory-winner-name');
+
+  if (isSeriesOver && seriesWinner) {
+    if (titleEl) titleEl.textContent = '¡Serie Finalizada!';
+    if (trophyEl) trophyEl.textContent = '🏆';
+    if (winnerNameEl) winnerNameEl.textContent = `¡${seriesWinner.name} gana la serie!`;
+  } else {
+    if (titleEl) titleEl.textContent = `¡Partida ${state.gameNumber} Finalizada!`;
+    if (trophyEl) trophyEl.textContent = '🥇';
+    if (winnerNameEl) winnerNameEl.textContent = `¡${winnerTeam.name} gana esta partida!`;
+  }
+
+  // Marcador de serie
+  const seriesModeLabel = document.getElementById('series-mode-label');
+  const seriesGameTag = document.getElementById('series-game-tag');
+  const seriesTeamAName = document.getElementById('series-team-a-name');
+  const seriesTeamBName = document.getElementById('series-team-b-name');
+  const seriesWinsA = document.getElementById('series-wins-a');
+  const seriesWinsB = document.getElementById('series-wins-b');
+  const pipContainerA = document.getElementById('series-pips-a');
+  const pipContainerB = document.getElementById('series-pips-b');
+
+  const modeLabel = state.matchMode === 'bo3' ? 'Mejor de 3' : 'Mejor de 5';
+
+  if (seriesModeLabel) seriesModeLabel.textContent = modeLabel;
+  if (seriesGameTag) seriesGameTag.textContent = `Partida ${state.gameNumber} de ${state.matchMode === 'bo3' ? 3 : 5}`;
+  if (seriesTeamAName) seriesTeamAName.textContent = state.teams.teamA.name;
+  if (seriesTeamBName) seriesTeamBName.textContent = state.teams.teamB.name;
+  if (seriesWinsA) seriesWinsA.textContent = String(state.gamesWonTeamA);
+  if (seriesWinsB) seriesWinsB.textContent = String(state.gamesWonTeamB);
+
+  // Render pips
+  function buildSeriesPips(wonCount: number, total: number, wonClass: string): string {
+    let html = '';
+    for (let i = 0; i < total; i++) {
+      html += `<span class="series-pip ${i < wonCount ? wonClass : ''}"></span>`;
+    }
+    return html;
+  }
+
+  if (pipContainerA) pipContainerA.innerHTML = buildSeriesPips(state.gamesWonTeamA, winsNeeded, 'won-a');
+  if (pipContainerB) pipContainerB.innerHTML = buildSeriesPips(state.gamesWonTeamB, winsNeeded, 'won-b');
+
+  // Marcador final de la partida
   const finalTeamA = document.getElementById('final-team-a-name');
   const finalTeamB = document.getElementById('final-team-b-name');
   const finalScoreA = document.getElementById('final-score-a');
   const finalScoreB = document.getElementById('final-score-b');
 
-  if (winnerNameEl) winnerNameEl.textContent = `¡${winnerTeam.name} se corona campeón!`;
   if (finalTeamA) finalTeamA.textContent = state.teams.teamA.name;
   if (finalTeamB) finalTeamB.textContent = state.teams.teamB.name;
   if (finalScoreA) finalScoreA.textContent = String(state.scoreTeamA);
@@ -811,6 +975,23 @@ function showVictoryModal(state: GameState): void {
   if (maxPointsEl) maxPointsEl.textContent = `${maxHandPts} pts`;
   if (avgPointsEl) avgPointsEl.textContent = `${avgPts} pts`;
 
+  // Botones: mostrar el correcto según si la serie terminó
+  const btnNextGame = document.getElementById('btn-next-game');
+  const btnRematch = document.getElementById('btn-rematch');
+  const btnNextLabel = document.getElementById('btn-next-game-label');
+
+  if (isSeriesOver) {
+    // Serie terminada: mostrar "Nueva serie"
+    if (btnNextGame) btnNextGame.style.display = 'none';
+    if (btnRematch) btnRematch.style.display = 'flex';
+  } else {
+    // Serie en curso: mostrar "Siguiente partida"
+    const gamesLeft = state.matchMode === 'bo3' ? 3 - state.gameNumber : 5 - state.gameNumber;
+    if (btnNextLabel) btnNextLabel.textContent = `Siguiente Partida (${state.gamesWonTeamA} - ${state.gamesWonTeamB}) →`;
+    if (btnNextGame) btnNextGame.style.display = 'flex';
+    if (btnRematch) btnRematch.style.display = 'none';
+  }
+
   const modal = document.getElementById('victory-modal');
   if (modal) modal.classList.add('active');
 
@@ -823,7 +1004,52 @@ function closeVictoryModal(): void {
   if (modal) modal.classList.remove('active');
 }
 
-// Confetti Animado Nativo
+// ================= CONFIRMACIÓN DE SALIDOR ================= //
+function showStarterConfirmBanner(state: GameState, seat: SeatIndex): void {
+  const banner = document.getElementById('confirm-starter-banner');
+  const nameEl = document.getElementById('confirm-starter-name');
+  if (!banner || !nameEl) return;
+
+  nameEl.textContent = state.players[seat]?.name || '—';
+  banner.classList.remove('hidden');
+
+  // Marcar visualmente el asiento seleccionado como pendiente
+  document.querySelectorAll('.seat-card').forEach((c) => c.classList.remove('is-starter-pending'));
+  const card = document.getElementById(`seat-card-${seat}`);
+  card?.classList.add('is-starter-pending');
+}
+
+function hideStarterConfirmBanner(): void {
+  const banner = document.getElementById('confirm-starter-banner');
+  banner?.classList.add('hidden');
+  // Limpiar todos los pendientes
+  document.querySelectorAll('.seat-card').forEach((c) => c.classList.remove('is-starter-pending'));
+  pendingStarterSeat = null;
+}
+
+function setupStarterConfirmListeners(): void {
+  const btnConfirm = document.getElementById('btn-confirm-starter');
+  const btnCancel = document.getElementById('btn-cancel-starter');
+
+  if (btnConfirm) {
+    btnConfirm.addEventListener('click', () => {
+      if (pendingStarterSeat === null) return;
+      playDominoSlam();
+      setHandStarter(pendingStarterSeat);
+      hideStarterConfirmBanner();
+    });
+  }
+
+  if (btnCancel) {
+    btnCancel.addEventListener('click', () => {
+      playTap();
+      hideStarterConfirmBanner();
+    });
+  }
+}
+
+// ================= CONFETTI ================= //
+
 function startConfetti(): void {
   const canvas = document.getElementById('confetti-canvas') as HTMLCanvasElement | null;
   if (!canvas) return;
@@ -831,8 +1057,8 @@ function startConfetti(): void {
   const ctx = canvas.getContext('2d');
   if (!ctx) return;
 
-  canvas.width = canvas.parentElement?.clientWidth || 400;
-  canvas.height = canvas.parentElement?.clientHeight || 600;
+  canvas.width = window.innerWidth || 400;
+  canvas.height = window.innerHeight || 600;
 
   const particles: Array<{
     x: number;
