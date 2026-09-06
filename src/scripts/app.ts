@@ -301,18 +301,26 @@ function renderDominoTable(state: GameState): void {
       nameEl.textContent = player.name;
       nameEl.title = 'Haz clic para editar nombre del jugador';
       nameEl.style.cursor = 'pointer';
-      nameEl.onclick = () => {
+      nameEl.onclick = (e) => {
+        e.stopPropagation();
         const newName = prompt(`Ingrese el nuevo nombre para el Asiento ${player.seat + 1}:`, player.name);
-        if (newName) updatePlayerName(player.seat, newName);
+        if (newName) {
+          updatePlayerName(player.seat, newName);
+          renderState(loadGameState());
+        }
       };
     }
     if (teamEl) {
       teamEl.textContent = player.team === 'teamA' ? state.teams.teamA.name : state.teams.teamB.name;
       teamEl.title = 'Haz clic para editar nombre del equipo';
       teamEl.style.cursor = 'pointer';
-      teamEl.onclick = () => {
+      teamEl.onclick = (e) => {
+        e.stopPropagation();
         const newName = prompt(`Ingrese el nuevo nombre para ${player.team === 'teamA' ? 'Equipo A' : 'Equipo B'}:`, teamEl.textContent || '');
-        if (newName) updateTeamName(player.team, newName);
+        if (newName) {
+          updateTeamName(player.team, newName);
+          renderState(loadGameState());
+        }
       };
     }
 
