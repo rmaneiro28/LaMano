@@ -13,6 +13,7 @@
   },
   "dependencies": {
     "@astrojs/node": "^11.1.5",
+    "@astrojs/vercel": "^11.0.10",
     "astro": "^7.3.1"
   },
   "allowScripts": {
