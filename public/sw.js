@@ -31,6 +31,11 @@ self.addEventListener('activate', (event) => {
 });
 
 self.addEventListener('fetch', (event) => {
+  // Ignorar peticiones de extensiones de Chrome y peticiones POST (como la API)
+  if (!event.request.url.startsWith('http') || event.request.method !== 'GET') {
+    return;
+  }
+
   // Network first con fallback a cache para HTML y assets
   event.respondWith(
     fetch(event.request)
