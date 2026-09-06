@@ -24,7 +24,6 @@ import {
   playPhrase,
 } from './audio';
 import { initWakeLock, requestWakeLock, releaseWakeLock } from './wake-lock';
-import { initExpert } from './expert';
 
 // ================= ESTADO LOCAL DE FORMULARIOS ================= //
 let closeHandWinType: HandWinType = 'normal';
@@ -680,10 +679,10 @@ function showPhraseToast(phrase: string): void {
     toast.style.transition = 'opacity 0.3s ease';
     document.body.appendChild(toast);
   }
-  
+
   toast.textContent = phrase;
   toast.style.opacity = '1';
-  
+
   setTimeout(() => {
     if (toast) toast.style.opacity = '0';
   }, 4000);
@@ -899,7 +898,7 @@ function setupSetupModalListeners(): void {
     btnReset.addEventListener('click', () => {
       if (confirm('¿Estás seguro de que quieres limpiar toda la partida y borrar el historial?')) {
         playTap();
-        
+
         // Resetear form a valores por defecto
         (document.getElementById('setup-team-a-name') as HTMLInputElement).value = 'Nosotros';
         (document.getElementById('setup-team-b-name') as HTMLInputElement).value = 'Ellos';
@@ -1086,7 +1085,7 @@ function showVictoryModal(state: GameState): void {
         const winnerLabel = item.winType === 'normal' && item.winnerSeat !== undefined
           ? `${state.players[item.winnerSeat].name} (${teamName})`
           : `Tranca ganada por ${teamName}`;
-        
+
         return `
           <div class="history-card ${isTeamA ? 'winner-team-a' : 'winner-team-b'}" style="margin-bottom:0; font-size: 0.85rem;">
             <div class="history-card-header">
