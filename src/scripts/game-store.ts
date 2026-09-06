@@ -433,3 +433,27 @@ export function setupNewGame(
 ): GameState {
   return setupNewMatch(teamAName, teamBName, playerNames, 'bo3');
 }
+
+/**
+ * Actualiza el nombre de un equipo
+ */
+export function updateTeamName(teamId: TeamId, newName: string): GameState {
+  const state = { ...loadGameState() };
+  if (state.teams[teamId] && newName.trim().length > 0) {
+    state.teams[teamId].name = newName.trim();
+    saveGameState(state);
+  }
+  return state;
+}
+
+/**
+ * Actualiza el nombre de un jugador
+ */
+export function updatePlayerName(seat: SeatIndex, newName: string): GameState {
+  const state = { ...loadGameState() };
+  if (state.players[seat] && newName.trim().length > 0) {
+    state.players[seat].name = newName.trim();
+    saveGameState(state);
+  }
+  return state;
+}

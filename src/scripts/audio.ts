@@ -141,3 +141,56 @@ export function playVictory(): void {
     osc.stop(now + n.time + n.dur);
   });
 }
+
+/**
+ * Reproduce una frase con SpeechSynthesis según los puntos obtenidos en la mano
+ */
+export function playPhrase(points: number): string | null {
+  if (isMuted) return null;
+  if (typeof window === 'undefined' || !window.speechSynthesis) return null;
+
+  let phrases: string[] = [];
+
+  if (points >= 0 && points <= 29) {
+    phrases = [
+      'Marruñeco, agarra tu gallo muerto',
+      'Cojeloo',
+      'Y porque no trancaste, JEJEJEJEJE'
+    ];
+  } else if (points >= 30 && points <= 40) {
+    phrases = [
+      'Coje tu yuca José Mapuey',
+      '¡Ay paíto!',
+      'Er Diablo',
+      '¡Agarra ahii, trampolin de buche e verga!'
+    ];
+  } else if (points >= 41 && points <= 60) {
+    phrases = [
+      'Esto se jodió',
+      'Vayan preparandose los otros dos',
+      'Recoge los vidrios',
+      'Esto se lo llevó quien lo trajo'
+    ];
+  } else if (points >= 100) {
+    phrases = [
+      'Pa la mierdaaa, dos más',
+      'Dos más que diviertan'
+    ];
+  }
+
+  if (phrases.length === 0) return null;
+
+  const phrase = phrases[Math.floor(Math.random() * phrases.length)];
+  
+  // Detener frases anteriores
+  window.speechSynthesis.cancel();
+  
+  const utterance = new SpeechSynthesisUtterance(phrase);
+  utterance.lang = 'es-VE'; // o 'es-ES', 'es-US'
+  utterance.rate = 1.0;
+  utterance.pitch = 1.0;
+  
+  window.speechSynthesis.speak(utterance);
+  
+  return phrase;
+}

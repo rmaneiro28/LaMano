@@ -90,44 +90,42 @@
         </div>
       </div>
 
-      <!-- 3. Jugadores en Cruz -->
+      <!-- 3. Jugadores -->
       <div class="setup-section">
         <h3 class="setup-section-title">Jugadores (Posiciones en Mesa)</h3>
         <p class="section-description">Rotación continua antihoraria:</p>
 
-        <div class="players-cross-grid">
+        <div class="setup-grid-2">
+          <!-- Asiento 0: Sur (Equipo A) -->
+          <div class="input-group seat-group-south">
+            <label for="setup-player-0" class="input-label">
+              <span class="seat-index-badge badge-a">Jugador 1 (Sur - Eq A)</span>
+            </label>
+            <input type="text" id="setup-player-0" class="text-input player-name-input" data-seat="0" value="Jugador 1" placeholder="Nombre Jugador 1" required />
+          </div>
+
+          <!-- Asiento 1: Este (Equipo B) -->
+          <div class="input-group seat-group-east">
+            <label for="setup-player-1" class="input-label">
+              <span class="seat-index-badge badge-b">Jugador 2 (Este - Eq B)</span>
+            </label>
+            <input type="text" id="setup-player-1" class="text-input player-name-input" data-seat="1" value="Jugador 2" placeholder="Nombre Jugador 2" required />
+          </div>
+
           <!-- Asiento 2: Norte (Equipo A) -->
           <div class="input-group seat-group-north">
             <label for="setup-player-2" class="input-label">
-              <span class="seat-index-badge badge-a">Norte (Eq A)</span>
+              <span class="seat-index-badge badge-a">Jugador 3 (Norte - Eq A)</span>
             </label>
             <input type="text" id="setup-player-2" class="text-input player-name-input" data-seat="2" value="Jugador 3" placeholder="Nombre Jugador 3" required />
           </div>
 
-          <div class="cross-middle-row">
-            <!-- Asiento 3: Oeste (Equipo B) -->
-            <div class="input-group seat-group-west">
-              <label for="setup-player-3" class="input-label">
-                <span class="seat-index-badge badge-b">Oeste (Eq B)</span>
-              </label>
-              <input type="text" id="setup-player-3" class="text-input player-name-input" data-seat="3" value="Jugador 4" placeholder="Nombre Jugador 4" required />
-            </div>
-
-            <!-- Asiento 1: Este (Equipo B) -->
-            <div class="input-group seat-group-east">
-              <label for="setup-player-1" class="input-label">
-                <span class="seat-index-badge badge-b">Este (Eq B)</span>
-              </label>
-              <input type="text" id="setup-player-1" class="text-input player-name-input" data-seat="1" value="Jugador 2" placeholder="Nombre Jugador 2" required />
-            </div>
-          </div>
-
-          <!-- Asiento 0: Sur (Equipo A) -->
-          <div class="input-group seat-group-south">
-            <label for="setup-player-0" class="input-label">
-              <span class="seat-index-badge badge-a">Sur (Eq A)</span>
+          <!-- Asiento 3: Oeste (Equipo B) -->
+          <div class="input-group seat-group-west">
+            <label for="setup-player-3" class="input-label">
+              <span class="seat-index-badge badge-b">Jugador 4 (Oeste - Eq B)</span>
             </label>
-            <input type="text" id="setup-player-0" class="text-input player-name-input" data-seat="0" value="Jugador 1" placeholder="Nombre Jugador 1" required />
+            <input type="text" id="setup-player-3" class="text-input player-name-input" data-seat="3" value="Jugador 4" placeholder="Nombre Jugador 4" required />
           </div>
         </div>
       </div>

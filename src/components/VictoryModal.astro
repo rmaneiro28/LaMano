@@ -80,6 +80,14 @@
       </div>
     </div>
 
+    <!-- Historial de Jugadas -->
+    <div class="victory-history-card">
+      <h3 class="stats-title">Registro de Jugadas</h3>
+      <div class="victory-history-list" id="victory-history-list">
+        <!-- El historial de manos se inyectará aquí -->
+      </div>
+    </div>
+
     <!-- Acciones Finales -->
     <div class="victory-actions">
       <!-- Botón "Siguiente partida" (visible cuando la serie no ha terminado) -->
@@ -372,5 +380,36 @@
 
   .btn-new-game {
     height: 46px;
+  }
+  
+  .victory-history-card {
+    background: var(--bg-surface-elevated);
+    border: 1px solid var(--border-subtle);
+    border-radius: var(--radius-md);
+    padding: 0.85rem;
+    text-align: left;
+    display: flex;
+    flex-direction: column;
+    gap: 0.65rem;
+    z-index: 2;
+  }
+  
+  .victory-history-list {
+    display: flex;
+    flex-direction: column;
+    gap: 0.5rem;
+    max-height: 200px;
+    overflow-y: auto;
+    scrollbar-width: thin;
+    scrollbar-color: rgba(255, 255, 255, 0.2) transparent;
+  }
+  
+  .victory-history-list::-webkit-scrollbar {
+    width: 4px;
+  }
+  
+  .victory-history-list::-webkit-scrollbar-thumb {
+    background: rgba(255, 255, 255, 0.2);
+    border-radius: 4px;
   }
 </style>

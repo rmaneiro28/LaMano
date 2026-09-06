@@ -6,6 +6,8 @@ import {
   setupNewMatch,
   startNextGame,
   setHandStarter,
+  updateTeamName,
+  updatePlayerName,
   STATE_CHANGE_EVENT,
   getTeamBySeat,
   getWinsNeeded,
@@ -19,6 +21,7 @@ import {
   playDominoSlam,
   playUndo,
   playVictory,
+  playPhrase,
 } from './audio';
 import { initWakeLock, requestWakeLock, releaseWakeLock } from './wake-lock';
 
@@ -152,8 +155,24 @@ function renderScoreBoard(state: GameState): void {
   const rowsContainer = document.getElementById('scoresheet-rows');
   const scrollArea = document.getElementById('scoresheet-scroll-area');
 
-  if (nameA) nameA.textContent = state.teams.teamA.name;
-  if (nameB) nameB.textContent = state.teams.teamB.name;
+  if (nameA) {
+    nameA.textContent = state.teams.teamA.name;
+    nameA.title = 'Haz clic para editar nombre del equipo';
+    nameA.style.cursor = 'pointer';
+    nameA.onclick = () => {
+      const newName = prompt('Ingrese el nuevo nombre para Nosotros (Equipo A):', state.teams.teamA.name);
+      if (newName) updateTeamName('teamA', newName);
+    };
+  }
+  if (nameB) {
+    nameB.textContent = state.teams.teamB.name;
+    nameB.title = 'Haz clic para editar nombre del equipo';
+    nameB.style.cursor = 'pointer';
+    nameB.onclick = () => {
+      const newName = prompt('Ingrese el nuevo nombre para Ellos (Equipo B):', state.teams.teamB.name);
+      if (newName) updateTeamName('teamB', newName);
+    };
+  }
   if (scoreA) scoreA.textContent = String(state.scoreTeamA);
   if (scoreB) scoreB.textContent = String(state.scoreTeamB);
   if (roundDisplay) roundDisplay.textContent = String(state.currentRound);
@@ -276,9 +295,23 @@ function renderDominoTable(state: GameState): void {
     const cardEl = document.getElementById(`seat-card-${player.seat}`);
     const badgeEl = document.getElementById(`hand-indicator-${player.seat}`);
 
-    if (nameEl) nameEl.textContent = player.name;
+    if (nameEl) {
+      nameEl.textContent = player.name;
+      nameEl.title = 'Haz clic para editar nombre del jugador';
+      nameEl.style.cursor = 'pointer';
+      nameEl.onclick = () => {
+        const newName = prompt(`Ingrese el nuevo nombre para el Asiento ${player.seat + 1}:`, player.name);
+        if (newName) updatePlayerName(player.seat, newName);
+      };
+    }
     if (teamEl) {
       teamEl.textContent = player.team === 'teamA' ? state.teams.teamA.name : state.teams.teamB.name;
+      teamEl.title = 'Haz clic para editar nombre del equipo';
+      teamEl.style.cursor = 'pointer';
+      teamEl.onclick = () => {
+        const newName = prompt(`Ingrese el nuevo nombre para ${player.team === 'teamA' ? 'Equipo A' : 'Equipo B'}:`, teamEl.textContent || '');
+        if (newName) updateTeamName(player.team, newName);
+      };
     }
 
     const isStarter = state.currentHandStarterSeat === player.seat;
@@ -606,6 +639,11 @@ function setupCloseHandModalListeners(): void {
 
       playDominoSlam();
 
+      const phrase = playPhrase(closeHandPoints);
+      if (phrase) {
+        showPhraseToast(phrase);
+      }
+
       recordHand(
         closeHandWinType,
         closeHandPoints,
@@ -617,6 +655,35 @@ function setupCloseHandModalListeners(): void {
       closeCloseHandModal();
     });
   }
+}
+
+function showPhraseToast(phrase: string): void {
+  let toast = document.getElementById('phrase-toast');
+  if (!toast) {
+    toast = document.createElement('div');
+    toast.id = 'phrase-toast';
+    toast.style.position = 'fixed';
+    toast.style.bottom = '20px';
+    toast.style.left = '50%';
+    toast.style.transform = 'translateX(-50%)';
+    toast.style.backgroundColor = 'rgba(251, 191, 36, 0.9)';
+    toast.style.color = '#000';
+    toast.style.padding = '12px 24px';
+    toast.style.borderRadius = '8px';
+    toast.style.fontWeight = 'bold';
+    toast.style.zIndex = '99999';
+    toast.style.boxShadow = '0 4px 12px rgba(0,0,0,0.3)';
+    toast.style.textAlign = 'center';
+    toast.style.transition = 'opacity 0.3s ease';
+    document.body.appendChild(toast);
+  }
+  
+  toast.textContent = phrase;
+  toast.style.opacity = '1';
+  
+  setTimeout(() => {
+    if (toast) toast.style.opacity = '0';
+  }, 4000);
 }
 
 function updateCloseHandTypeUI(): void {
@@ -974,6 +1041,43 @@ function showVictoryModal(state: GameState): void {
   if (handsTeamBEl) handsTeamBEl.textContent = `${handsWonB} (${state.teams.teamB.name})`;
   if (maxPointsEl) maxPointsEl.textContent = `${maxHandPts} pts`;
   if (avgPointsEl) avgPointsEl.textContent = `${avgPts} pts`;
+
+  // Render history list
+  const historyListEl = document.getElementById('victory-history-list');
+  if (historyListEl) {
+    if (state.history.length === 0) {
+      historyListEl.innerHTML = '<p class="empty-note">Sin jugadas registradas</p>';
+    } else {
+      historyListEl.innerHTML = [...state.history].reverse().map(item => {
+        const starter = state.players[item.handStarterSeat];
+        const isTeamA = item.winningTeam === 'teamA';
+        const teamName = isTeamA ? state.teams.teamA.name : state.teams.teamB.name;
+        const winnerLabel = item.winType === 'normal' && item.winnerSeat !== undefined
+          ? `${state.players[item.winnerSeat].name} (${teamName})`
+          : `Tranca ganada por ${teamName}`;
+        
+        return `
+          <div class="history-card ${isTeamA ? 'winner-team-a' : 'winner-team-b'}" style="margin-bottom:0; font-size: 0.85rem;">
+            <div class="history-card-header">
+              <span class="history-round-tag">Ronda ${item.round}</span>
+              <span class="history-starter-info">
+                <span>✋ Salió:</span> <strong>${starter ? starter.name : '?'}</strong>
+              </span>
+            </div>
+            <div class="history-card-body">
+              <div class="history-winner-details">
+                <span class="history-winner-name">${winnerLabel}</span>
+              </div>
+              <div class="history-points-block">
+                <span class="history-points-gain ${isTeamA ? 'gain-team-a' : 'gain-team-b'}">+${item.points}</span>
+                <span class="history-running-score">${state.teams.teamA.name}: ${item.scoreTeamAAfter} | ${state.teams.teamB.name}: ${item.scoreTeamBAfter}</span>
+              </div>
+            </div>
+          </div>
+        `;
+      }).join('');
+    }
+  }
 
   // Botones: mostrar el correcto según si la serie terminó
   const btnNextGame = document.getElementById('btn-next-game');
