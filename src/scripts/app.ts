@@ -892,6 +892,34 @@ function setupSetupModalListeners(): void {
       closeSetupModal();
     });
   }
+
+  // Limpiar Partida por completo
+  const btnReset = document.getElementById('btn-reset-match');
+  if (btnReset) {
+    btnReset.addEventListener('click', () => {
+      if (confirm('¿Estás seguro de que quieres limpiar toda la partida y borrar el historial?')) {
+        playTap();
+        
+        // Resetear form a valores por defecto
+        (document.getElementById('setup-team-a-name') as HTMLInputElement).value = 'Nosotros';
+        (document.getElementById('setup-team-b-name') as HTMLInputElement).value = 'Ellos';
+        (document.getElementById('setup-player-0') as HTMLInputElement).value = 'Jugador 1';
+        (document.getElementById('setup-player-1') as HTMLInputElement).value = 'Jugador 2';
+        (document.getElementById('setup-player-2') as HTMLInputElement).value = 'Jugador 3';
+        (document.getElementById('setup-player-3') as HTMLInputElement).value = 'Jugador 4';
+
+        setupNewMatch(
+          'Nosotros',
+          'Ellos',
+          ['Jugador 1', 'Jugador 2', 'Jugador 3', 'Jugador 4'],
+          setupMatchMode
+        );
+
+        closeSetupModal();
+        alert('Partida limpiada correctamente.');
+      }
+    });
+  }
 }
 
 function openSetupModal(): void {

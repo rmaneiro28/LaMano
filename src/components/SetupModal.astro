@@ -9,7 +9,7 @@
     <div class="modal-header">
       <div>
         <h2 id="modal-title-setup">Configuración de Mesa</h2>
-        <p class="modal-subtitle">Wicho´s Domino Club • 100 Puntos • Antihorario</p>
+        <p class="modal-subtitle">Wicho´s Domino Club • 100 Puntos</p>
       </div>
       <button class="btn-icon close-modal-btn" id="btn-close-setup" aria-label="Cerrar">✕</button>
     </div>
@@ -92,8 +92,7 @@
 
       <!-- 3. Jugadores -->
       <div class="setup-section">
-        <h3 class="setup-section-title">Jugadores (Posiciones en Mesa)</h3>
-        <p class="section-description">Rotación continua antihoraria:</p>
+        <h3 class="setup-section-title">Jugadores</h3>
 
         <div class="setup-grid-2">
           <!-- Asiento 0: Sur (Equipo A) -->
@@ -143,19 +142,21 @@
           <span>Meta: <strong>100 pts</strong></span>
         </div>
         <div class="rule-chip">
-          <span>↺</span>
-          <span>Sentido: <strong>Antihorario</strong></span>
-        </div>
-        <div class="rule-chip">
           <span>🔄</span>
           <span>Salidas: <strong>Rotación Continua</strong></span>
         </div>
       </div>
 
-      <!-- Botón de Inicio / Guardar -->
-      <button type="submit" class="btn btn-primary btn-save-setup" id="btn-save-setup">
-        <span>Comenzar Serie</span>
-      </button>
+      <!-- Botones de Acción -->
+      <div class="setup-actions">
+        <button type="submit" class="btn btn-primary btn-save-setup" id="btn-save-setup">
+          <span>Comenzar Serie / Guardar</span>
+        </button>
+        
+        <button type="button" class="btn btn-danger btn-reset-match" id="btn-reset-match">
+          <span>🗑️ Limpiar Partida</span>
+        </button>
+      </div>
     </form>
   </div>
 </div>
@@ -467,9 +468,35 @@
     color: var(--text-main);
   }
 
+  .setup-actions {
+    display: flex;
+    flex-direction: column;
+    gap: 0.65rem;
+    margin-top: 0.25rem;
+  }
+
   .btn-save-setup {
     height: 50px;
     font-size: 1.05rem;
-    margin-top: 0.25rem;
+  }
+
+  .btn-danger {
+    background: rgba(239, 68, 68, 0.1);
+    color: #ef4444;
+    border: 1px solid rgba(239, 68, 68, 0.3);
+    height: 44px;
+    font-size: 0.95rem;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    border-radius: var(--radius-sm);
+    cursor: pointer;
+    font-weight: 600;
+    transition: all 0.2s ease;
+  }
+  
+  .btn-danger:hover {
+    background: rgba(239, 68, 68, 0.2);
+    border-color: rgba(239, 68, 68, 0.5);
   }
 </style>
