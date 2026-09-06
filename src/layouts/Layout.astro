@@ -35,10 +35,25 @@ const {
     <meta name="apple-mobile-web-app-title" content="Wicho Club" />
     <link rel="apple-touch-icon" href="./logo.png" />
 
-    <!-- Open Graph -->
+    <!-- Open Graph / Facebook -->
+    <meta property="og:type" content="website" />
+    <meta property="og:url" content={Astro.url} />
     <meta property="og:title" content={title} />
     <meta property="og:description" content={description} />
-    <meta property="og:type" content="website" />
+    <meta property="og:image" content="/logo.png" />
+
+    <!-- Twitter -->
+    <meta property="twitter:card" content="summary_large_image" />
+    <meta property="twitter:url" content={Astro.url} />
+    <meta property="twitter:title" content={title} />
+    <meta property="twitter:description" content={description} />
+    <meta property="twitter:image" content="/logo.png" />
+
+    <!-- SEO Avanzado -->
+    <meta name="keywords" content="dominó, club de dominó, Wicho's Domino Club, marcador, tanteador, pwa, juego de mesa" />
+    <meta name="author" content="Wicho's Domino Club" />
+    <meta name="robots" content="index, follow" />
+    <link rel="canonical" href={Astro.url} />
   </head>
   <body>
     <slot />

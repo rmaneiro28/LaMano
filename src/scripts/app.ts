@@ -884,15 +884,18 @@ function setupSetupModalListeners(): void {
       const teamAName = (document.getElementById('setup-team-a-name') as HTMLInputElement).value.trim() || 'Nosotros';
       const teamBName = (document.getElementById('setup-team-b-name') as HTMLInputElement).value.trim() || 'Ellos';
 
-      const p0 = (document.getElementById('setup-player-0') as HTMLInputElement).value.trim() || 'Jugador 1';
-      const p1 = (document.getElementById('setup-player-1') as HTMLInputElement).value.trim() || 'Jugador 2';
-      const p2 = (document.getElementById('setup-player-2') as HTMLInputElement).value.trim() || 'Jugador 3';
-      const p3 = (document.getElementById('setup-player-3') as HTMLInputElement).value.trim() || 'Jugador 4';
+      const state = loadGameState();
+      const currentPlayers = [
+        state.players[0]?.name || 'Jugador 1',
+        state.players[1]?.name || 'Jugador 2',
+        state.players[2]?.name || 'Jugador 3',
+        state.players[3]?.name || 'Jugador 4'
+      ] as [string, string, string, string];
 
       setupNewMatch(
         teamAName,
         teamBName,
-        [p0, p1, p2, p3],
+        currentPlayers,
         setupMatchMode
       );
 
@@ -910,10 +913,6 @@ function setupSetupModalListeners(): void {
         // Resetear form a valores por defecto
         (document.getElementById('setup-team-a-name') as HTMLInputElement).value = 'Nosotros';
         (document.getElementById('setup-team-b-name') as HTMLInputElement).value = 'Ellos';
-        (document.getElementById('setup-player-0') as HTMLInputElement).value = 'Jugador 1';
-        (document.getElementById('setup-player-1') as HTMLInputElement).value = 'Jugador 2';
-        (document.getElementById('setup-player-2') as HTMLInputElement).value = 'Jugador 3';
-        (document.getElementById('setup-player-3') as HTMLInputElement).value = 'Jugador 4';
 
         setupNewMatch(
           'Nosotros',
@@ -936,11 +935,6 @@ function openSetupModal(): void {
   const inputTeamB = document.getElementById('setup-team-b-name') as HTMLInputElement | null;
   if (inputTeamA) inputTeamA.value = state.teams.teamA.name;
   if (inputTeamB) inputTeamB.value = state.teams.teamB.name;
-
-  state.players.forEach((p) => {
-    const pInput = document.getElementById(`setup-player-${p.seat}`) as HTMLInputElement | null;
-    if (pInput) pInput.value = p.name;
-  });
 
   // Modalidad actual
   setupMatchMode = state.matchMode || 'bo3';
