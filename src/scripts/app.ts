@@ -24,6 +24,7 @@ import {
   playPhrase,
 } from './audio';
 import { initWakeLock, requestWakeLock, releaseWakeLock } from './wake-lock';
+import { initExpert } from './expert';
 
 // ================= ESTADO LOCAL DE FORMULARIOS ================= //
 let closeHandWinType: HandWinType = 'normal';
@@ -101,6 +102,8 @@ function setupHeaderListeners(): void {
       openSetupModal();
     });
   }
+
+  initExpert('btn-expert-mic');
 }
 
 function updateWakeLockButton(active: boolean): void {

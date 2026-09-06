@@ -1,15 +1,15 @@
 ---
-// Header.astro - Barra superior con logo oficial Wicho Domino Club y controles
+// Header.astro - Barra superior con logo oficial Wicho´s Domino Club y controles
 ---
 
 <header class="app-header">
-  <div class="header-brand" id="btn-replay-intro" title="Wicho Domino Club (Toca para ver video de bienvenida)" role="button" tabindex="0">
+  <div class="header-brand" id="btn-replay-intro" title="Wicho´s Domino Club (Toca para ver video de bienvenida)" role="button" tabindex="0">
     <div class="logo-circle-container">
-      <img src="./logo.png" alt="Wicho Domino Club" class="header-brand-logo" />
+      <img src="./logo.png" alt="Wicho´s Domino Club" class="header-brand-logo" />
     </div>
     <div class="header-brand-texts">
       <div class="header-title-row">
-        <h1 class="header-title">WICHO</h1>
+        <h1 class="header-title">WICHO´S</h1>
         <span class="header-badge-club">CLUB</span>
       </div>
       <span class="header-subtitle">Dominó por Parejas</span>
@@ -36,6 +36,16 @@
       aria-label="Sonido"
     >
       <span class="btn-icon-symbol" id="audio-icon">🔊</span>
+    </button>
+
+    <!-- Botón Experto (Microfono) -->
+    <button
+      id="btn-expert-mic"
+      class="header-btn"
+      title="Preguntarle al experto (Mantén presionado)"
+      aria-label="Hablar con el experto"
+    >
+      <span class="btn-icon-symbol">🎙️</span>
     </button>
 
     <!-- Botón Ajustes / Setup -->

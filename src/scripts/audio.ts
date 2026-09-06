@@ -142,39 +142,41 @@ export function playVictory(): void {
   });
 }
 
+let currentPhraseAudio: HTMLAudioElement | null = null;
+
 /**
- * Reproduce una frase con SpeechSynthesis según los puntos obtenidos en la mano
+ * Reproduce un audio real según los puntos obtenidos en la mano
  */
 export function playPhrase(points: number): string | null {
   if (isMuted) return null;
-  if (typeof window === 'undefined' || !window.speechSynthesis) return null;
+  if (typeof window === 'undefined') return null;
 
-  let phrases: string[] = [];
+  let phrases: { text: string; file: string }[] = [];
 
   if (points >= 0 && points <= 29) {
     phrases = [
-      'Marruñeco, agarra tu gallo muerto',
-      'Cojeloo',
-      'Y porque no trancaste, JEJEJEJEJE'
+      { text: 'Marruñeco, agarra tu gallo muerto', file: '/Audios/0-29 Marruñeco, agarra tu gallo muerto.ogg' },
+      { text: 'Cojeloo', file: '/Audios/0-29 Cogelooo.ogg' },
+      { text: 'Y porque no trancaste, JEJEJEJEJE', file: '/Audios/0-29 Y porque no trancaste.ogg' }
     ];
   } else if (points >= 30 && points <= 40) {
     phrases = [
-      'Coje tu yuca José Mapuey',
-      '¡Ay paíto!',
-      'Er Diablo',
-      '¡Agarra ahii, trampolin de buche e verga!'
+      { text: 'Coje tu yuca José Mapuey', file: '/Audios/30-40 Coge tu Yuca Jose Mapuey.ogg' },
+      { text: '¡Ay paíto!', file: '/Audios/30-40 Ay Paito.ogg' },
+      { text: 'Er Diablo', file: '/Audios/30-40 Er Diabloo.ogg' },
+      { text: '¡Agarra ahii, trampolin de buche e verga!', file: '/Audios/30-40 ¡Agarra ahii, trampolin de buche e verga!.ogg' }
     ];
   } else if (points >= 41 && points <= 60) {
     phrases = [
-      'Esto se jodió',
-      'Vayan preparandose los otros dos',
-      'Recoge los vidrios',
-      'Esto se lo llevó quien lo trajo'
+      { text: 'Esto se jodió', file: '/Audios/41-60 Esto se jodio.ogg' },
+      { text: 'Vayan preparandose los otros dos', file: '/Audios/41-60 Vayan preparandose los otros dos.ogg' },
+      { text: 'Recoge los vidrios', file: '/Audios/41-60 Recoge los vidrios.ogg' },
+      { text: 'Esto se lo llevó quien lo trajo', file: '/Audios/41-60 Esto se lo llevó quien lo trajo.ogg' }
     ];
   } else if (points >= 100) {
     phrases = [
-      'Pa la mierdaaa, dos más',
-      'Dos más que diviertan'
+      { text: 'Pa la mierdaaa, dos más', file: '/Audios/100+ Pa la mierda dos mas.ogg' },
+      { text: 'Dos más que diviertan', file: '/Audios/100+ Dos más que diviertan.ogg' }
     ];
   }
 
@@ -182,15 +184,14 @@ export function playPhrase(points: number): string | null {
 
   const phrase = phrases[Math.floor(Math.random() * phrases.length)];
   
-  // Detener frases anteriores
-  window.speechSynthesis.cancel();
+  // Detener audio anterior si sigue sonando
+  if (currentPhraseAudio) {
+    currentPhraseAudio.pause();
+    currentPhraseAudio.currentTime = 0;
+  }
   
-  const utterance = new SpeechSynthesisUtterance(phrase);
-  utterance.lang = 'es-VE'; // o 'es-ES', 'es-US'
-  utterance.rate = 1.0;
-  utterance.pitch = 1.0;
+  currentPhraseAudio = new Audio(phrase.file);
+  currentPhraseAudio.play().catch(e => console.error("Error reproduciendo audio de frase:", e));
   
-  window.speechSynthesis.speak(utterance);
-  
-  return phrase;
+  return phrase.text;
 }
