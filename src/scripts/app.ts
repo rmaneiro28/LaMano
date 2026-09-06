@@ -102,7 +102,7 @@ function setupHeaderListeners(): void {
     });
   }
 
-  initExpert('btn-expert-mic');
+  // initExpert('btn-expert-mic'); // Removed as it is not defined and causes ReferenceError
 }
 
 function updateWakeLockButton(active: boolean): void {
