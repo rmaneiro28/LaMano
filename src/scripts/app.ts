@@ -37,6 +37,7 @@ let closeHandPoints = 0;
 let setupMatchMode: MatchMode = 'bo3';
 let isWakeLockActive = false;
 let pendingStarterSeat: SeatIndex | null = null; // Primer toque: asiento seleccionado pero sin confirmar
+let lastProcessedIntentTime: number = 0; // Debounce para evitar bug de Android
 
 // Canvas de Confetti
 let confettiAnimationId: number | null = null;
@@ -131,6 +132,15 @@ function setupHeaderListeners(): void {
         const state = loadGameState();
         if (state.isFinished) return;
         
+        // --- DEBOUNCE PARA BUG DE ANDROID ---
+        // Evita procesar duplicados enviados por el navegador en un rango de 4 segundos
+        const now = Date.now();
+        if (now - lastProcessedIntentTime < 4000) {
+          console.log("Ignorando intent duplicado por debounce");
+          return;
+        }
+        lastProcessedIntentTime = now;
+
         if (intent.type === 'starter') {
           if (state.starterConfirmed) return; // Si ya hay salidor, ignorar
           const teamName = intent.team === 'teamA' ? state.teams.teamA.name : state.teams.teamB.name;
