@@ -1,7 +1,6 @@
-export interface VoiceIntent {
-  points: number;
-  team: 'teamA' | 'teamB';
-}
+export type VoiceIntent = 
+  | { type: 'score', points: number, team: 'teamA' | 'teamB' }
+  | { type: 'starter', team: 'teamA' | 'teamB' };
 
 export function parseVoiceIntent(text: string): VoiceIntent | null {
   const normalized = text.toLowerCase().normalize("NFD").replace(/[\u0300-\u036f]/g, "");
@@ -15,6 +14,11 @@ export function parseVoiceIntent(text: string): VoiceIntent | null {
   }
 
   if (!team) return null;
+
+  // Si dice "salió" o "salimos" es un registro de salida
+  if (/\b(salio|sali|salimos|salen|sale)\b/.test(normalized)) {
+    return { type: 'starter', team };
+  }
 
   // Encontrar puntos (buscar dígitos primero)
   const digitMatch = normalized.match(/\b(\d+)\b/);
@@ -44,7 +48,7 @@ export function parseVoiceIntent(text: string): VoiceIntent | null {
   }
 
   if (points > 0 && points <= 300) {
-    return { points, team };
+    return { type: 'score', points, team };
   }
 
   return null;

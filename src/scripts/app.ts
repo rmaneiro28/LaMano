@@ -23,9 +23,11 @@ import {
   playVictory,
   playPhrase,
   playWakeWordDetected,
+  speakText,
 } from './audio';
 import { initVoiceAssistant, toggleVoiceAssistant } from './voice-assistant';
 import { initWakeLock, requestWakeLock, releaseWakeLock } from './wake-lock';
+import { shareToWhatsApp } from './share';
 
 // ================= ESTADO LOCAL DE FORMULARIOS ================= //
 let closeHandWinType: HandWinType = 'normal';
@@ -129,8 +131,20 @@ function setupHeaderListeners(): void {
         const state = loadGameState();
         if (state.isFinished) return;
         
+        if (intent.type === 'starter') {
+          if (state.starterConfirmed) return; // Si ya hay salidor, ignorar
+          const teamName = intent.team === 'teamA' ? state.teams.teamA.name : state.teams.teamB.name;
+          const starterSeat = intent.team === 'teamA' ? 0 : 1; // Asumir jugador 0 o 1
+          
+          showPhraseToast(`🎙️ Wicho anotó salida para: ${teamName}`);
+          playDominoSlam();
+          setHandStarter(starterSeat as SeatIndex);
+          return;
+        }
+
+        // --- MANEJO DE PUNTAJE ---
         if (!state.starterConfirmed) {
-          showPhraseToast("Wicho dice: ¡Toca quién salió primero!");
+          showPhraseToast("Wicho dice: ¡Falta quién salió primero!");
           return;
         }
 
@@ -151,6 +165,16 @@ function setupHeaderListeners(): void {
           setTimeout(() => showPhraseToast(`🎙️ ${phrase}`), 1500);
         }
 
+        // Hablar el marcador a los 2 segundos (luego del golpe y la frase corta)
+        setTimeout(() => {
+           // Si el puntaje de A es mayor, lo dice primero para que suene natural
+           if (newScoreA >= newScoreB) {
+             speakText(`Van ${newScoreA} a ${newScoreB}`);
+           } else {
+             speakText(`Van ${newScoreB} a ${newScoreA}`);
+           }
+        }, 2000);
+
         recordHand(
           'normal',
           intent.points,
@@ -162,10 +186,13 @@ function setupHeaderListeners(): void {
       () => {
         // onWakeWord
         if (btnVoice) {
-          const isNewDetection = !(btnVoice as any)._glowTimeout;
+          const now = Date.now();
+          const lastAudio = (btnVoice as any)._lastWakeAudio || 0;
           
-          if (isNewDetection) {
+          // Cooldown de 5 segundos para el audio para evitar el bucle infinito del micrófono en Android
+          if (now - lastAudio > 5000) {
              playWakeWordDetected();
+             (btnVoice as any)._lastWakeAudio = now;
           }
 
           // Transición suave para que no parpadee bruscamente
@@ -1061,6 +1088,14 @@ function setupVictoryModalListeners(): void {
   const btnNextGame = document.getElementById('btn-next-game');
   const btnRematch = document.getElementById('btn-rematch');
   const btnNewGame = document.getElementById('btn-new-game-from-victory');
+  const btnShare = document.getElementById('btn-share-whatsapp');
+
+  if (btnShare) {
+    btnShare.addEventListener('click', () => {
+      playTap();
+      shareToWhatsApp();
+    });
+  }
 
   if (btnNextGame) {
     btnNextGame.addEventListener('click', () => {
@@ -1225,12 +1260,15 @@ function showVictoryModal(state: GameState): void {
     // Serie terminada: mostrar "Nueva serie"
     if (btnNextGame) btnNextGame.style.display = 'none';
     if (btnRematch) btnRematch.style.display = 'flex';
+    if (btnShare) btnShare.style.display = 'flex';
   } else {
-    // Serie en curso: mostrar "Siguiente partida"
-    const gamesLeft = state.matchMode === 'bo3' ? 3 - state.gameNumber : 5 - state.gameNumber;
-    if (btnNextLabel) btnNextLabel.textContent = `Siguiente Partida (${state.gamesWonTeamA} - ${state.gamesWonTeamB}) →`;
-    if (btnNextGame) btnNextGame.style.display = 'flex';
+    if (btnNextGame) {
+      btnNextGame.style.display = 'flex';
+      const btnNextLabel = document.getElementById('btn-next-game-label');
+      if (btnNextLabel) btnNextLabel.textContent = `Siguiente Partida (${state.gamesWonTeamA} - ${state.gamesWonTeamB}) →`;
+    }
     if (btnRematch) btnRematch.style.display = 'none';
+    if (btnShare) btnShare.style.display = 'none';
   }
 
   const modal = document.getElementById('victory-modal');
