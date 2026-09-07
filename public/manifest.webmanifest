@@ -1,6 +1,6 @@
 {
-  "name": "LaMano - Marcador y Salidas de Dominó",
-  "short_name": "LaMano",
+  "name": "Wicho's Domino Club",
+  "short_name": "Wicho's Club",
   "description": "Marcador profesional de dominó por parejas y gestión de salidas y turnos en mesa.",
   "start_url": "./",
   "display": "standalone",
@@ -9,9 +9,9 @@
   "orientation": "portrait",
   "icons": [
     {
-      "src": "./favicon.svg",
+      "src": "./Logo.jpeg",
       "sizes": "any",
-      "type": "image/svg+xml",
+      "type": "image/jpeg",
       "purpose": "any maskable"
     }
   ]

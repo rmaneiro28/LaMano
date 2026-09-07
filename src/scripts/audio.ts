@@ -147,13 +147,18 @@ let currentPhraseAudio: HTMLAudioElement | null = null;
 /**
  * Reproduce un audio real según los puntos obtenidos en la mano
  */
-export function playPhrase(points: number): string | null {
+export function playPhrase(points: number, isGameOver: boolean = false): string | null {
   if (isMuted) return null;
   if (typeof window === 'undefined') return null;
 
   let phrases: { text: string; file: string }[] = [];
 
-  if (points >= 0 && points <= 29) {
+  if (isGameOver) {
+    phrases = [
+      { text: 'Pa la mierdaaa, dos más', file: '/Audios/100+ Pa la mierda dos mas.ogg' },
+      { text: 'Dos más que diviertan', file: '/Audios/100+ Dos más que diviertan.ogg' }
+    ];
+  } else if (points >= 0 && points <= 29) {
     phrases = [
       { text: 'Marruñeco, agarra tu gallo muerto', file: '/Audios/0-29 Marruñeco, agarra tu gallo muerto.ogg' },
       { text: 'Cojeloo', file: '/Audios/0-29 Cogelooo.ogg' },
@@ -166,17 +171,12 @@ export function playPhrase(points: number): string | null {
       { text: 'Er Diablo', file: '/Audios/30-40 Er Diabloo.ogg' },
       { text: '¡Agarra ahii, trampolin de buche e verga!', file: '/Audios/30-40 ¡Agarra ahii, trampolin de buche e verga!.ogg' }
     ];
-  } else if (points >= 41 && points <= 60) {
+  } else if (points >= 41) {
     phrases = [
       { text: 'Esto se jodió', file: '/Audios/41-60 Esto se jodio.ogg' },
       { text: 'Vayan preparandose los otros dos', file: '/Audios/41-60 Vayan preparandose los otros dos.ogg' },
       { text: 'Recoge los vidrios', file: '/Audios/41-60 Recoge los vidrios.ogg' },
       { text: 'Esto se lo llevó quien lo trajo', file: '/Audios/41-60 Esto se lo llevó quien lo trajo.ogg' }
-    ];
-  } else if (points >= 100) {
-    phrases = [
-      { text: 'Pa la mierdaaa, dos más', file: '/Audios/100+ Pa la mierda dos mas.ogg' },
-      { text: 'Dos más que diviertan', file: '/Audios/100+ Dos más que diviertan.ogg' }
     ];
   }
 
@@ -194,4 +194,16 @@ export function playPhrase(points: number): string | null {
   currentPhraseAudio.play().catch(e => console.error("Error reproduciendo audio de frase:", e));
   
   return phrase.text;
+}
+
+export function playWakeWordDetected(): void {
+  if (isMuted) return;
+  
+  if (currentPhraseAudio) {
+    currentPhraseAudio.pause();
+    currentPhraseAudio.currentTime = 0;
+  }
+
+  currentPhraseAudio = new Audio('/Audios/Que juee.ogg');
+  currentPhraseAudio.play().catch(e => console.error("Error reproduciendo audio de wake word:", e));
 }

@@ -22,7 +22,9 @@ import {
   playUndo,
   playVictory,
   playPhrase,
+  playWakeWordDetected,
 } from './audio';
+import { initVoiceAssistant, toggleVoiceAssistant } from './voice-assistant';
 import { initWakeLock, requestWakeLock, releaseWakeLock } from './wake-lock';
 
 // ================= ESTADO LOCAL DE FORMULARIOS ================= //
@@ -102,7 +104,103 @@ function setupHeaderListeners(): void {
     });
   }
 
-  // initExpert('btn-expert-mic'); // Removed as it is not defined and causes ReferenceError
+  const btnVoice = document.getElementById('btn-voice-assistant');
+  if (btnVoice) {
+    btnVoice.addEventListener('click', () => {
+      // Pedimos permiso de micrófono
+      const isActive = toggleVoiceAssistant();
+      if (isActive) playTap();
+    });
+    
+    // Inicializamos
+    initVoiceAssistant(
+      (intent, text) => {
+        // Callback de intent
+        const dot = document.getElementById('voice-dot');
+        const icon = document.getElementById('voice-icon');
+        if (btnVoice && dot && icon) {
+           // Asegurarnos de apagar el brillo cuando termine de escuchar la frase final
+           btnVoice.style.borderColor = '';
+           btnVoice.style.boxShadow = '';
+           btnVoice.style.transform = '';
+           if ((btnVoice as any)._glowTimeout) clearTimeout((btnVoice as any)._glowTimeout);
+        }
+
+        const state = loadGameState();
+        if (state.isFinished) return;
+        
+        if (!state.starterConfirmed) {
+          showPhraseToast("Wicho dice: ¡Toca quién salió primero!");
+          return;
+        }
+
+        const teamName = intent.team === 'teamA' ? state.teams.teamA.name : state.teams.teamB.name;
+        showPhraseToast(`🎙️ Wicho anotó: ${intent.points} pts para ${teamName}`);
+        
+        // Simular cierre de mano normal
+        const winnerSeat = intent.team === 'teamA' ? 0 : 1; 
+        
+        playDominoSlam();
+
+        const newScoreA = intent.team === 'teamA' ? state.scoreTeamA + intent.points : state.scoreTeamA;
+        const newScoreB = intent.team === 'teamB' ? state.scoreTeamB + intent.points : state.scoreTeamB;
+        const isGameOver = newScoreA >= 100 || newScoreB >= 100;
+
+        const phrase = playPhrase(intent.points, isGameOver);
+        if (phrase) {
+          setTimeout(() => showPhraseToast(`🎙️ ${phrase}`), 1500);
+        }
+
+        recordHand(
+          'normal',
+          intent.points,
+          winnerSeat as SeatIndex,
+          intent.team,
+          undefined
+        );
+      },
+      () => {
+        // onWakeWord
+        if (btnVoice) {
+          const isNewDetection = !(btnVoice as any)._glowTimeout;
+          
+          if (isNewDetection) {
+             playWakeWordDetected();
+          }
+
+          // Transición suave para que no parpadee bruscamente
+          btnVoice.style.transition = 'all 0.3s ease';
+          btnVoice.style.borderColor = '#10b981';
+          btnVoice.style.boxShadow = '0 0 15px #10b981';
+          btnVoice.style.transform = 'scale(1.1)';
+          
+          if ((btnVoice as any)._glowTimeout) {
+            clearTimeout((btnVoice as any)._glowTimeout);
+          }
+          
+          (btnVoice as any)._glowTimeout = setTimeout(() => {
+            btnVoice.style.borderColor = '';
+            btnVoice.style.boxShadow = '';
+            btnVoice.style.transform = '';
+            (btnVoice as any)._glowTimeout = null;
+          }, 3500); // Darle un poco más de tiempo (3.5s) por si hace pausas largas
+        }
+      },
+      (isActive) => {
+        // Actualizar UI del botón
+        if (btnVoice) {
+          const dot = document.getElementById('voice-dot');
+          if (isActive) {
+            btnVoice.classList.add('active');
+            if (dot) dot.classList.add('active');
+          } else {
+            btnVoice.classList.remove('active');
+            if (dot) dot.classList.remove('active');
+          }
+        }
+      }
+    );
+  }
 }
 
 function updateWakeLockButton(active: boolean): void {
@@ -649,7 +747,13 @@ function setupCloseHandModalListeners(): void {
 
       playDominoSlam();
 
-      const phrase = playPhrase(closeHandPoints);
+      const state = loadGameState();
+      let winningTeam = closeHandWinType === 'tranca' ? closeHandWinnerTeam : getTeamBySeat(closeHandWinnerSeat!);
+      const newScoreA = winningTeam === 'teamA' ? state.scoreTeamA + closeHandPoints : state.scoreTeamA;
+      const newScoreB = winningTeam === 'teamB' ? state.scoreTeamB + closeHandPoints : state.scoreTeamB;
+      const isGameOver = newScoreA >= 100 || newScoreB >= 100;
+
+      const phrase = playPhrase(closeHandPoints, isGameOver);
       if (phrase) {
         showPhraseToast(phrase);
       }
@@ -685,6 +789,7 @@ function showPhraseToast(phrase: string): void {
     toast.style.boxShadow = '0 4px 12px rgba(0,0,0,0.3)';
     toast.style.textAlign = 'center';
     toast.style.transition = 'opacity 0.3s ease';
+    toast.style.pointerEvents = 'none';
     document.body.appendChild(toast);
   }
 
