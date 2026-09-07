@@ -54,6 +54,7 @@ export function initVoiceAssistant(
         if (hasWakeWord && !wakeWordDetectedThisPhrase) {
           wakeWordDetectedThisPhrase = true;
           if (onWakeWordDetectedCallback) {
+            // Ya no llamaremos al audio desde aquí para evitar el corte en Android
             onWakeWordDetectedCallback();
           }
         }
@@ -110,6 +111,22 @@ export function toggleVoiceAssistant(): boolean {
 
   if (onStateChangeCallback) onStateChangeCallback(isListening);
   return isListening;
+}
+
+export function pauseVoiceAssistant(): void {
+  if (recognition && isListening) {
+    recognition.stop();
+  }
+}
+
+export function resumeVoiceAssistant(): void {
+  if (recognition && isListening) {
+    try {
+      recognition.start();
+    } catch (e) {
+      // Ignorar error si ya estaba corriendo
+    }
+  }
 }
 
 export function isAssistantListening(): boolean {

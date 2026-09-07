@@ -208,9 +208,15 @@ export function playWakeWordDetected(): void {
   currentPhraseAudio.play().catch(e => console.error("Error reproduciendo audio de wake word:", e));
 }
 
-export function speakText(text: string): void {
-  if (isMuted) return;
-  if (typeof window === 'undefined' || !window.speechSynthesis) return;
+export function speakText(text: string, onEnd?: () => void): void {
+  if (isMuted) {
+    if (onEnd) onEnd();
+    return;
+  }
+  if (typeof window === 'undefined' || !window.speechSynthesis) {
+    if (onEnd) onEnd();
+    return;
+  }
   
   // Cancelar audios hablados previos
   window.speechSynthesis.cancel();
@@ -218,6 +224,11 @@ export function speakText(text: string): void {
   const utterance = new SpeechSynthesisUtterance(text);
   utterance.lang = 'es-VE'; // o es-ES
   utterance.rate = 1.1; // Un poco más rápido para que no sea tedioso
+  
+  if (onEnd) {
+    utterance.onend = onEnd;
+    utterance.onerror = onEnd;
+  }
   
   window.speechSynthesis.speak(utterance);
 }

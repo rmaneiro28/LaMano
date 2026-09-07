@@ -1,6 +1,7 @@
 export type VoiceIntent = 
   | { type: 'score', points: number, team: 'teamA' | 'teamB' }
-  | { type: 'starter', team: 'teamA' | 'teamB' };
+  | { type: 'starter', team: 'teamA' | 'teamB' }
+  | { type: 'names', teamA: string[], teamB: string[] };
 
 export function parseVoiceIntent(text: string): VoiceIntent | null {
   const normalized = text.toLowerCase().normalize("NFD").replace(/[\u0300-\u036f]/g, "");
@@ -17,7 +18,49 @@ export function parseVoiceIntent(text: string): VoiceIntent | null {
 
   // Si dice "salió" o "salimos" es un registro de salida
   if (/\b(salio|sali|salimos|salen|sale)\b/.test(normalized)) {
-    return { type: 'starter', team };
+    // Excluir si la frase parece ser de nombres ("salimos rubel y cesar") 
+    // a menos que sea muy corta o explícita. Para proteger el registro de nombres, verificamos si hay muchos nombres.
+    if (!/\b(contra|ellos)\b/.test(normalized) || normalized.split(' ').length <= 6) {
+      return { type: 'starter', team };
+    }
+  }
+
+  // --- DETECCIÓN DE NOMBRES ---
+  // Si menciona "nombres", "jugando con", o divide claramente la frase ("contra", "ellos son")
+  if (/\b(contra|ellos son|y ellos|y contra|versus|vs)\b/.test(normalized) && normalized.includes(' y ')) {
+    let parts = normalized.split(/\b(contra|ellos son|y ellos|y contra|versus|vs)\b/);
+    if (parts.length >= 3) {
+      let left = parts[0];
+      let right = parts.slice(2).join(' ');
+      
+      const extractNames = (text: string) => {
+        const fillers = new Set([
+          'yo', 'estoy', 'jugando', 'con', 'voy', 'vamos', 'nosotros', 'somos', 
+          'el', 'la', 'los', 'las', 'un', 'una', 'anota', 'nombres', 'nombre', 
+          'mi', 'equipo', 'y', 'van', 'son', 'se', 'llaman', 'wicho', 'guicho', 
+          'we', 'show', 'a', 'de', 'que', 'en', 'para', 'aca', 'alla', 'aqui', 
+          'estamos', 'ellos', 'contra', 'otros', 'los', 'las', 'mis', 'sus',
+          'compañero', 'rivales', 'contrarios'
+        ]);
+        const words = text.split(/\s+/);
+        // Filtrar palabras vacías o muy cortas
+        return words
+          .filter(w => w.length > 2 && !fillers.has(w))
+          .map(w => w.charAt(0).toUpperCase() + w.slice(1));
+      };
+      
+      const namesA = extractNames(left);
+      const namesB = extractNames(right);
+      
+      // Necesitamos al menos 1 nombre por equipo (idealmente 2) para considerar que es un intent de nombres válido
+      if (namesA.length >= 1 && namesB.length >= 1) {
+        // Rellenar con genéricos si solo se entendió 1 nombre
+        while (namesA.length < 2) namesA.push(`Jugador A${namesA.length + 1}`);
+        while (namesB.length < 2) namesB.push(`Jugador B${namesB.length + 1}`);
+        
+        return { type: 'names', teamA: namesA.slice(0, 2), teamB: namesB.slice(0, 2) };
+      }
+    }
   }
 
   // Encontrar puntos (buscar dígitos primero)

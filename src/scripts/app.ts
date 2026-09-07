@@ -22,10 +22,9 @@ import {
   playUndo,
   playVictory,
   playPhrase,
-  playWakeWordDetected,
   speakText,
 } from './audio';
-import { initVoiceAssistant, toggleVoiceAssistant } from './voice-assistant';
+import { initVoiceAssistant, toggleVoiceAssistant, pauseVoiceAssistant, resumeVoiceAssistant } from './voice-assistant';
 import { initWakeLock, requestWakeLock, releaseWakeLock } from './wake-lock';
 import { shareToWhatsApp } from './share';
 
@@ -141,6 +140,25 @@ function setupHeaderListeners(): void {
         }
         lastProcessedIntentTime = now;
 
+        if (intent.type === 'names') {
+          // Asignar los nombres a los asientos
+          // Equipo A (Nosotros) = asientos 0 y 2
+          // Equipo B (Ellos) = asientos 1 y 3
+          updatePlayerName(0, intent.teamA[0]);
+          updatePlayerName(2, intent.teamA[1]);
+          updatePlayerName(1, intent.teamB[0]);
+          updatePlayerName(3, intent.teamB[1]);
+          
+          showPhraseToast(`🎙️ Nombres registrados: ${intent.teamA.join(' y ')} vs ${intent.teamB.join(' y ')}`);
+          
+          pauseVoiceAssistant();
+          speakText(`Nombres registrados. Equipo A: ${intent.teamA.join(' y ')}. Equipo B: ${intent.teamB.join(' y ')}.`, () => {
+            resumeVoiceAssistant();
+          });
+          
+          return;
+        }
+
         if (intent.type === 'starter') {
           if (state.starterConfirmed) return; // Si ya hay salidor, ignorar
           const teamName = intent.team === 'teamA' ? state.teams.teamA.name : state.teams.teamB.name;
@@ -177,12 +195,15 @@ function setupHeaderListeners(): void {
 
         // Hablar el marcador a los 2 segundos (luego del golpe y la frase corta)
         setTimeout(() => {
-           // Si el puntaje de A es mayor, lo dice primero para que suene natural
-           if (newScoreA >= newScoreB) {
-             speakText(`Van ${newScoreA} a ${newScoreB}`);
-           } else {
-             speakText(`Van ${newScoreB} a ${newScoreA}`);
-           }
+           // Pausar el micrófono antes de hablar para que no se escuche a sí mismo
+           pauseVoiceAssistant();
+
+           // El usuario solicitó que siempre se diga el puntaje de "Nosotros" (Team A) de primero
+           const textToSpeak = `Van ${newScoreA} a ${newScoreB}`;
+           speakText(textToSpeak, () => {
+             // Reanudar el micrófono cuando termine de hablar
+             resumeVoiceAssistant();
+           });
         }, 2000);
 
         recordHand(
@@ -196,14 +217,8 @@ function setupHeaderListeners(): void {
       () => {
         // onWakeWord
         if (btnVoice) {
-          const now = Date.now();
-          const lastAudio = (btnVoice as any)._lastWakeAudio || 0;
-          
-          // Cooldown de 5 segundos para el audio para evitar el bucle infinito del micrófono en Android
-          if (now - lastAudio > 5000) {
-             playWakeWordDetected();
-             (btnVoice as any)._lastWakeAudio = now;
-          }
+          // El audio "Que juee" en el wake word interrumpe el micrófono en Android,
+          // así que nos limitamos al feedback visual (brillo verde) para mantener el micrófono estable.
 
           // Transición suave para que no parpadee bruscamente
           btnVoice.style.transition = 'all 0.3s ease';
@@ -1265,6 +1280,7 @@ function showVictoryModal(state: GameState): void {
   const btnNextGame = document.getElementById('btn-next-game');
   const btnRematch = document.getElementById('btn-rematch');
   const btnNextLabel = document.getElementById('btn-next-game-label');
+  const btnShare = document.getElementById('btn-share-whatsapp');
 
   if (isSeriesOver) {
     // Serie terminada: mostrar "Nueva serie"
